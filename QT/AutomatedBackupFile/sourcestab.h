@@ -7,6 +7,8 @@
 #include <QCheckBox>
 #include <QSpinBox>
 
+class SourceManager;
+
 namespace Ui {
 class SourcesTab;
 }
@@ -26,8 +28,22 @@ public:
     QPushButton* getBtnRemoveSource();
     QPushButton* getBtnTestConnection();
 
+public slots:
+    void onAddLocalSource();
+    void onAddNetworkSource();
+    void onAddCloudSource();
+    void onEditSource();
+    void onRemoveSource();
+    void onTestConnection();
+
 private:
+    void setupConnections();
+    void refreshSourceTable();
+    QString getSelectedSourceId() const;
+    QString formatBytes(qint64 bytes) const;
+
     Ui::SourcesTab *ui;
+    SourceManager *m_sourceManager;
 };
 
 #endif // SOURCESTAB_H
