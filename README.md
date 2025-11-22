@@ -3,6 +3,7 @@
 A cross-platform automated backup solution that monitors network and cloud locations, detects file changes, and creates encrypted backups to local or cloud destinations.
 
 ## Overview
+https://github.com/user-attachments/assets/254fbc8a-ce33-4848-b72d-c370edb6bf85
 
 This project provides an intelligent backup system that automatically tracks file changes across network shares and cloud storage, compresses and encrypts the data, and stores it securely in your chosen destination.
 
@@ -165,6 +166,10 @@ Contributions are welcome! Please feel free to submit issues or pull requests.
 *License to be determined*
 
 ## Contact
+
+
+
+
 
 Repository: [https://github.com/alimajidi62/Automate_Backup_File](https://github.com/alimajidi62/Automate_Backup_File)
 
