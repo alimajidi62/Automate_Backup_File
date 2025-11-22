@@ -10,21 +10,64 @@ This project provides an intelligent backup system that automatically tracks fil
 
 ## Current Status
 
-🚧 **In Development** - This project currently has implementations in both Qt (C++) and WPF (C#/.NET). Active development is ongoing.
+🚧 **In Development** - This project currently focuses on the Qt (C++) implementation with a comprehensive backend architecture. Active development is ongoing.
 
 ### ✅ Completed
+
+#### User Interface
 - **Qt UI Framework**: Fully functional modular UI with 5 main tabs
-  - Backup Sources tab for managing network/cloud paths
-  - Schedule tab for configuring automated backups
-  - Backup Tasks tab with progress tracking and todo list
-  - Destination tab for backup locations and retention policies
-  - Settings tab for compression, encryption, and notifications
-- **Modular Architecture**: UI split into separate, maintainable widget files
-- **Cross-platform Build**: Successfully builds on Windows with MSVC 2022
+  - **Sources Tab**: Add/edit/remove local, network, and cloud sources with authentication
+  - **Schedule Tab**: Configure backup schedules (UI ready, backend pending)
+  - **Tasks Tab**: Monitor backup operations with progress tracking
+  - **Destination Tab**: Manage backup destinations with retention policies
+  - **Settings Tab**: Configure compression, encryption, and notifications
+- **Custom Styling**: Professional QSS stylesheet for consistent UI appearance
+- **Responsive Design**: Resizable windows with proper layout management
+
+#### Backend Architecture
+- **Source Management System**:
+  - `BackupSource` class: Represents local/network/cloud sources with metadata
+  - `SourceManager`: Handles source CRUD operations, connectivity testing, and file monitoring
+  - File system watcher integration for change detection
+  - JSON-based persistence for sources configuration
+  - Network authentication support (username/password/domain)
+  - Source status tracking (Available, Unavailable, Checking, Error, CredentialsRequired)
+
+- **Destination Management System**:
+  - `BackupDestination` class: Represents local/network/cloud destinations
+  - `DestinationManager`: Manages destinations, space monitoring, and retention policies
+  - `RetentionPolicy` class: Configurable retention with daily/weekly/monthly backup preservation
+  - Space availability tracking and best-destination selection algorithm
+  - JSON-based persistence for destinations configuration
+
+- **Cloud Integration Framework**:
+  - `CloudProvider` base class with virtual interface
+  - Provider implementations: GoogleDrive, Dropbox, OneDrive, AmazonS3
+  - OAuth authentication framework (structure in place)
+  - Network-based operations using Qt's QNetworkAccessManager
+  - Mock provider for testing without actual cloud credentials
+  - Factory pattern for provider creation
+
+- **Authentication & Security**:
+  - `NetworkCredentialsDialog`: GUI for entering network credentials
+  - `CloudAuthDialog`: GUI for OAuth-based cloud authentication
+  - Credential storage in backend models (encryption pending)
+  - Windows networking library integration (mpr, netapi32)
+
+- **Build System**:
+  - CMake configuration with Qt 6.9.1
+  - AutoUIC, AutoMOC, AutoRCC enabled
+  - Qt Widgets, Concurrent, and Network modules integrated
+  - Cross-platform support (Windows MSVC, Linux GCC, macOS Clang)
+  - Resource file system (QRC) for stylesheets and assets
 
 ### 🔄 In Progress
-- Backend implementation for UI controls
-- File monitoring and change detection system
+- Cloud provider API implementation (OAuth flow, upload/download operations)
+- Backup task execution engine
+- Compression algorithm integration
+- Encryption implementation (AES-256)
+- Schedule execution system
+- Progress reporting and logging
 
 ## Planned Features
 
@@ -79,37 +122,63 @@ This project provides an intelligent backup system that automatically tracks fil
 
 ### Qt Implementation (C++)
 - **Framework**: Qt 6.9.1
-- **Build System**: CMake
+- **Build System**: CMake 3.16+
 - **Compiler**: MSVC 2022 (Windows), GCC/Clang (Linux/macOS)
+- **Qt Modules**: 
+  - QtWidgets (UI components)
+  - QtConcurrent (Multi-threading)
+  - QtNetwork (HTTP requests, cloud integration)
+- **C++ Standard**: C++17
+- **Platform Libraries**: Windows Networking (mpr, netapi32) for network authentication
 
-### WPF Implementation (C#)
-- **Framework**: .NET Framework / .NET Core
-- **UI**: WPF (Windows Presentation Foundation)
-- **Target Platform**: Windows
+### Architecture Components
+- **UI Layer**: Modular tab-based widgets with `.ui` files
+- **Business Logic**: Manager classes (SourceManager, DestinationManager)
+- **Data Models**: BackupSource, BackupDestination, RetentionPolicy, CloudProvider
+- **Persistence**: JSON-based configuration storage
+- **Styling**: QSS (Qt Style Sheets) for custom appearance
 
 ## Project Structure
 
 ```
 Automate_Backup_File/
 ├── README.md
-├── QT/                          # Qt/C++ implementation
-│   └── AutomatedBackupFile/
-│       ├── main.cpp             # Application entry point
-│       ├── mainwindow.cpp/h/ui  # Main window (tab container)
-│       ├── sourcestab.cpp/h/ui  # Backup sources management
-│       ├── scheduletab.cpp/h/ui # Schedule configuration
-│       ├── taskstab.cpp/h/ui    # Backup operations & tasks
-│       ├── destinationtab.cpp/h/ui  # Destination settings
-│       ├── settingstab.cpp/h/ui # App settings & encryption
-│       ├── CMakeLists.txt       # Build configuration
-│       └── build/               # Build output directory
+├── QT/AutomatedBackupFile/         # Qt/C++ implementation
+│   ├── main.cpp                    # Application entry point
+│   │
+│   ├── UI Components (Tab Widgets)
+│   ├── mainwindow.cpp/h/ui         # Main window (tab container)
+│   ├── sourcestab.cpp/h/ui         # Backup sources management UI
+│   ├── scheduletab.cpp/h/ui        # Schedule configuration UI
+│   ├── taskstab.cpp/h/ui           # Backup operations & tasks UI
+│   ├── destinationtab.cpp/h/ui     # Destination settings UI
+│   ├── settingstab.cpp/h/ui        # App settings & encryption UI
+│   │
+│   ├── Dialogs
+│   ├── networkcredentialsdialog.cpp/h  # Network authentication dialog
+│   ├── cloudauthdialog.cpp/h           # Cloud OAuth dialog
+│   │
+│   ├── Backend Logic (Manager Classes)
+│   ├── sourcemanager.cpp/h         # Source CRUD operations & monitoring
+│   ├── destinationmanager.cpp/h    # Destination management & space tracking
+│   │
+│   ├── Data Models
+│   ├── backupsource.cpp/h          # Source data model with JSON serialization
+│   ├── backupdestination.cpp/h     # Destination data model
+│   ├── retentionpolicy.cpp/h       # Retention policy configuration
+│   ├── cloudprovider.cpp/h         # Cloud provider interface & implementations
+│   │
+│   ├── Resources
+│   ├── resources.qrc               # Qt resource file
+│   ├── styles.qss                  # Custom stylesheet
+│   │
+│   ├── Build System
+│   ├── CMakeLists.txt              # Build configuration
+│   └── build/                      # Build output directory
+│       ├── AutomatedBackupFile.sln # Visual Studio solution
+│       └── Debug/                  # Debug build artifacts
 │
-└── WPF/                         # WPF/C# implementation
-    └── AutomatedBackupFile/
-        ├── AutomatedBackupFile.sln
-        ├── MainWindow.xaml
-        ├── MainWindow.xaml.cs
-        └── App.xaml
+└── build/                          # Legacy build directory
 ```
 
 ## Installation
@@ -120,14 +189,9 @@ Automate_Backup_File/
 - Qt 6.9.1 or higher
 - CMake 3.16 or higher
 - C++17 compatible compiler
-- Windows: Visual Studio 2022 or higher
+- Windows: Visual Studio 2022 or higher with MSVC compiler
 - Linux: GCC 9+ or Clang 10+
 - macOS: Xcode 12+
-
-#### For WPF Version:
-- Windows 10/11
-- .NET Framework 4.7.2+ or .NET 6+
-- Visual Studio 2019 or higher (recommended)
 
 ### Building from Source
 
@@ -136,25 +200,30 @@ Automate_Backup_File/
 cd QT/AutomatedBackupFile
 mkdir build
 cd build
+
+# Set Qt path (adjust path to your Qt installation)
 $env:CMAKE_PREFIX_PATH = "C:\Qt\6.9.1\msvc2022_64"
+
+# Configure and build
 cmake ..
 cmake --build . --config Debug
+
+# Or open in Visual Studio
+# build\AutomatedBackupFile.sln
 ```
 
 #### Qt Version (Linux/macOS):
 ```bash
 cd QT/AutomatedBackupFile
 mkdir build && cd build
+
+# Linux with GCC
 cmake ..
 cmake --build .
-```
 
-#### WPF Version:
-```bash
-cd WPF/AutomatedBackupFile
-# Open AutomatedBackupFile.sln in Visual Studio and build
-# Or use command line:
-msbuild AutomatedBackupFile.sln /p:Configuration=Release
+# macOS with Clang
+cmake ..
+cmake --build .
 ```
 
 ## Usage
@@ -175,72 +244,267 @@ After building, run the executable:
 
 The application features a tabbed interface with the following sections:
 
-1. **Backup Sources**: Add and manage network paths and cloud storage locations
-2. **Schedule**: Configure automated backup schedules (daily, weekly, monthly, custom)
-3. **Backup Tasks**: Monitor active backups, view pending tasks, and check logs
-4. **Destination**: Set backup destinations and configure retention policies
-5. **Settings**: Configure compression, encryption (AES-256), and notifications
+1. **Backup Sources Tab** (Fully Functional):
+   - Add local directories via folder browser
+   - Add network paths with UNC path support (\\\\server\\share)
+   - Network authentication with username/password/domain
+   - Test connectivity for each source
+   - Edit/remove sources
+   - View source status with color-coded indicators
+   - Enable file system change monitoring
+   - Configure check interval for monitoring
+   - Auto-save/load sources configuration
 
-*Note: UI is fully functional, backend implementation in progress*
+2. **Schedule Tab** (UI Ready):
+   - Configure automated backup schedules
+   - Support for daily, weekly, monthly, custom intervals
+   - Enable/disable scheduler
+   - *Backend implementation pending*
+
+3. **Backup Tasks Tab** (UI Ready):
+   - Monitor active backup operations
+   - View backup progress with progress bars
+   - Check backup history and logs
+   - Start/stop manual backups
+   - *Backend implementation pending*
+
+4. **Destination Tab** (Fully Functional):
+   - Add local, network, and cloud destinations
+   - Configure retention policies (days, max count, size limits)
+   - Enable daily/weekly/monthly backup preservation
+   - Monitor available space per destination
+   - Support for multiple cloud providers
+   - Auto-cleanup based on retention rules
+
+5. **Settings Tab** (UI Ready):
+   - Configure compression settings
+   - Set encryption options (AES-256)
+   - Notification preferences
+   - *Backend implementation pending*
+
+### Backend Features
+
+#### Source Management
+- Automatic source validation and connectivity testing
+- Real-time status monitoring (Available/Unavailable/Checking/Error)
+- File system watcher integration for change detection
+- Network path authentication with Windows credential integration
+- Source statistics (file count, total size)
+- JSON-based configuration persistence
+
+#### Destination Management
+- Multi-destination support (local, network, cloud)
+- Space availability tracking
+- Intelligent destination selection based on available space
+- Retention policy enforcement
+- Cloud provider factory pattern for extensibility
+
+#### Cloud Provider Framework
+- Abstract CloudProvider base class
+- Implemented providers: GoogleDrive, Dropbox, OneDrive, Amazon S3
+- Mock provider for testing
+- OAuth authentication structure
+- Upload/download operations interface
+- Space quota management
 
 ## Roadmap
 
-### Phase 1: UI Development ✅
-- [x] Basic Qt UI framework with modular architecture
+### Phase 1: UI & Architecture ✅ (Completed)
+- [x] Qt UI framework with modular architecture
 - [x] Tab-based interface (Sources, Schedule, Tasks, Destination, Settings)
-- [x] Modular widget system for maintainability
-- [ ] WPF UI implementation
+- [x] Modular widget system (.cpp/.h/.ui separation)
+- [x] Custom QSS styling
+- [x] BackupSource data model with JSON serialization
+- [x] BackupDestination data model
+- [x] SourceManager backend class
+- [x] DestinationManager backend class
+- [x] RetentionPolicy class
+- [x] CloudProvider abstract interface
+- [x] Network authentication dialog
+- [x] Cloud authentication dialog structure
 
-### Phase 2: Core Functionality (In Progress)
-- [ ] File system monitoring implementation
-- [ ] Change detection algorithm
-- [ ] Network path connection and validation
-- [ ] Basic backup operation (copy files)
-- [ ] Progress tracking and reporting
+### Phase 2: Source & Destination Management ✅ (Completed)
+- [x] Local source management with file browser
+- [x] Network source management with UNC paths
+- [x] Network credential authentication (username/password/domain)
+- [x] Source connectivity testing
+- [x] File system watcher integration
+- [x] Change monitoring configuration
+- [x] Source status tracking and display
+- [x] JSON persistence for sources
+- [x] Local/network/cloud destination support
+- [x] Retention policy configuration
+- [x] Space monitoring per destination
+- [x] JSON persistence for destinations
 
-### Phase 3: Advanced Features
-- [ ] Cloud storage integration (Google Drive, OneDrive, Dropbox, S3)
-- [ ] Compression engine (ZIP, 7Z, TAR.GZ)
-- [ ] Encryption system (AES-256)
-- [ ] Secure credential management
-- [ ] Scheduler implementation with cron-like syntax
-- [ ] Todo list auto-generation
+### Phase 3: Core Backup Functionality (In Progress)
+- [x] File system monitoring framework
+- [x] Change detection structure
+- [x] Network path validation
+- [ ] Backup task execution engine
+- [ ] File copy operations with progress tracking
+- [ ] Multi-threaded backup operations
+- [ ] Backup queue management
+- [ ] Error handling and retry logic
+- [ ] Progress reporting to UI
 
-### Phase 4: Optimization & Polish
-- [ ] Multi-threading for parallel backups
+### Phase 4: Cloud & Compression (Next)
+- [x] Cloud provider architecture
+- [x] Provider factory pattern
+- [ ] OAuth implementation (Google Drive, Dropbox, OneDrive)
+- [ ] Amazon S3 authentication and operations
+- [ ] Cloud upload/download with progress
+- [ ] Compression engine (ZIP, 7Z)
+- [ ] Compression level configuration
+- [ ] Encrypted compression format
+
+### Phase 5: Security & Encryption
+- [ ] AES-256 encryption implementation
+- [ ] Secure credential storage (encrypted vault)
+- [ ] Password-protected backups
+- [ ] Integrity verification (SHA-256 checksums)
+- [ ] Certificate-based authentication for cloud
+- [ ] Two-factor authentication support
+
+### Phase 6: Scheduling & Automation
+- [ ] Schedule execution engine
+- [ ] Cron-like schedule syntax
+- [ ] Background service/daemon mode
+- [ ] Windows service integration
+- [ ] Linux systemd service
+- [ ] macOS LaunchAgent
+- [ ] Wake system for scheduled backups
+
+### Phase 7: Advanced Features
+- [ ] Incremental backup support
+- [ ] Differential backup support
 - [ ] Backup restoration functionality
+- [ ] Point-in-time recovery
+- [ ] Backup verification
+- [ ] Email/SMS notifications
+- [ ] Webhook notifications
 - [ ] Comprehensive logging system
-- [ ] Configuration file import/export
-- [ ] Performance optimization
-- [ ] Cross-platform testing (Windows, Linux, macOS)
+- [ ] Log rotation and cleanup
 
-### Phase 5: Enterprise Features
-- [ ] Email notifications
-- [ ] Backup verification and integrity checks
-- [ ] Incremental and differential backups
-- [ ] Backup profiles and templates
+### Phase 8: Enterprise & Polish
 - [ ] Command-line interface
 - [ ] REST API for remote management
+- [ ] Backup profiles and templates
+- [ ] Configuration import/export
+- [ ] Multi-language support (i18n)
+- [ ] Dark/light theme toggle
+- [ ] Database storage option (SQLite)
+- [ ] Performance profiling and optimization
+- [ ] Memory usage optimization
+- [ ] Cross-platform testing suite
+- [ ] Documentation and user manual
+- [ ] Installer packages (MSI, DEB, DMG)
 
 ## Architecture
 
-### Modular UI Design
+### Modular Design Pattern
 
-The Qt implementation uses a modular architecture where each tab is a separate widget:
+The Qt implementation follows a clean architecture with clear separation between UI and business logic:
 
-- **MainWindow**: Container for tab widget and menu bar
-- **SourcesTab**: Manages backup source locations
-- **ScheduleTab**: Handles backup scheduling
-- **TasksTab**: Displays backup operations and logs
-- **DestinationTab**: Configures backup destinations
-- **SettingsTab**: Application settings and security
+#### UI Layer (View)
+Each tab is a separate widget with three files:
+- **MainWindow** (.cpp/.h/.ui): Main container with tab widget and status bar
+- **SourcesTab** (.cpp/.h/.ui): Source management interface
+- **ScheduleTab** (.cpp/.h/.ui): Backup scheduling interface
+- **TasksTab** (.cpp/.h/.ui): Task monitoring interface
+- **DestinationTab** (.cpp/.h/.ui): Destination configuration interface
+- **SettingsTab** (.cpp/.h/.ui): Application settings interface
 
-This design provides:
-- Easy maintenance and updates
-- Better code organization
-- Reduced merge conflicts in team development
-- Reusable components
-- Clear separation of concerns
+**Dialogs**:
+- **NetworkCredentialsDialog**: Collect network authentication (username/password/domain)
+- **CloudAuthDialog**: Handle OAuth flow for cloud providers
+
+#### Business Logic Layer (Controller/Manager)
+Manager classes handle all business operations:
+- **SourceManager**: 
+  - CRUD operations for sources
+  - Connectivity testing (local, network, cloud)
+  - File system monitoring using QFileSystemWatcher
+  - Change detection and notification
+  - JSON persistence
+
+- **DestinationManager**:
+  - CRUD operations for destinations
+  - Space monitoring and availability checking
+  - Retention policy enforcement
+  - Best destination selection algorithm
+  - Cloud provider integration
+  - JSON persistence
+
+- **CloudProviderFactory**:
+  - Factory pattern for creating cloud provider instances
+  - Provider registration and discovery
+
+#### Data Model Layer (Model)
+Clean data models with business logic:
+- **BackupSource**:
+  - Properties: path, type, status, credentials, statistics
+  - Methods: validation, serialization (toJson/fromJson), display formatting
+  - Enums: SourceType (Local/Network/Cloud), SourceStatus
+
+- **BackupDestination**:
+  - Properties: path, type, status, space info, credentials
+  - Methods: validation, space calculation, serialization
+  - Enums: DestinationType, DestinationStatus
+
+- **RetentionPolicy**:
+  - Properties: retention days, max count, max size, preservation rules
+  - Methods: shouldDeleteBackup(), policy description
+  - Supports daily/weekly/monthly backup preservation
+
+- **CloudProvider** (Abstract):
+  - Virtual interface: authenticate, uploadFile, downloadFile, deleteFile, listFiles
+  - Concrete implementations: GoogleDriveProvider, DropboxProvider, OneDriveProvider, AmazonS3Provider
+  - Mock implementation for testing
+
+### Design Benefits
+- **Separation of Concerns**: UI, logic, and data are clearly separated
+- **Testability**: Business logic can be tested independently of UI
+- **Maintainability**: Easy to modify one layer without affecting others
+- **Extensibility**: New cloud providers can be added by implementing CloudProvider interface
+- **Reusability**: Manager classes can be reused in CLI or service modes
+- **Type Safety**: Strong typing with enums and classes
+- **Signal/Slot Architecture**: Qt's event-driven model for loose coupling
+
+### Key Patterns Used
+- **Factory Pattern**: CloudProviderFactory for provider instantiation
+- **Manager Pattern**: Centralized management of sources and destinations
+- **Model-View Pattern**: Data models separate from UI representation
+- **Observer Pattern**: Qt signals/slots for event notification
+- **Strategy Pattern**: Different cloud provider implementations
+- **Singleton-like**: Manager instances owned by tab widgets
+
+## Key Features Summary
+
+### ✅ Currently Working
+1. **Local Source Management**: Browse and add local directories
+2. **Network Source Management**: Add UNC paths with authentication
+3. **Source Authentication**: Username/password/domain for network paths
+4. **Connectivity Testing**: Test each source for availability
+5. **Source Monitoring**: File system watcher with configurable check intervals
+6. **Status Tracking**: Real-time status updates with color-coded display
+7. **Source Persistence**: Auto-save/load sources from JSON
+8. **Destination Management**: Add multiple destinations (local/network/cloud)
+9. **Retention Policies**: Configure automatic cleanup rules
+10. **Space Monitoring**: Track available space per destination
+11. **Cloud Framework**: Extensible cloud provider architecture
+12. **Professional UI**: Custom styled interface with QSS
+13. **Cross-platform Build**: CMake configuration for Windows/Linux/macOS
+
+### 🔨 Next to Implement
+1. Cloud provider OAuth implementation
+2. Backup task execution engine
+3. File compression (ZIP/7Z)
+4. AES-256 encryption
+5. Schedule execution
+6. Progress tracking UI updates
+7. Logging system
+8. Backup restoration
 
 ## Contributing
 
@@ -248,29 +512,67 @@ Contributions are welcome! Please feel free to submit issues or pull requests.
 
 ### Development Guidelines
 - Follow Qt coding conventions for C++ code
-- Keep UI and business logic separated
-- Add comments for complex algorithms
+- Maintain separation between UI (tabs), logic (managers), and data (models)
+- Use Qt's signal/slot mechanism for communication between components
+- Add Doxygen-style comments for public methods
+- Write unit tests for business logic (managers and models)
 - Update documentation when adding features
 - Test on multiple platforms when possible
+- Use Qt Creator or Visual Studio for development
+- Ensure CMake configuration works on all platforms
+
+### Code Organization
+- UI files: `*tab.cpp/h/ui` and `*dialog.cpp/h/ui`
+- Manager classes: `*manager.cpp/h`
+- Data models: `backup*.cpp/h`, `retention*.cpp/h`, `cloud*.cpp/h`
+- Keep `.cpp` files focused (< 500 lines preferred)
+- Use forward declarations in headers to reduce compile dependencies
 
 ## Security Considerations
 
-- All credentials will be stored encrypted
-- Backup files will be encrypted using industry-standard AES-256
-- Secure credential transmission to network/cloud services
-- No plain-text storage of sensitive information
+### Current Implementation
+- Network credentials are stored in memory during session
+- Credential dialogs collect username/password/domain securely
+- Windows networking library integration for authenticated network access
+
+### Planned Security Features
+- AES-256 encryption for all backup archives
+- Secure credential vault (encrypted storage)
+- Password-protected backup files
+- SHA-256 integrity verification for backups
+- OAuth 2.0 for cloud provider authentication
+- Certificate-based authentication support
+- No plain-text credential storage
+- Secure memory handling for sensitive data
+- Optional two-factor authentication for cloud providers
 
 ## License
 
 *License to be determined*
 
+## Known Limitations & Future Work
+
+### Current Limitations
+- Cloud provider OAuth flow is structure-only (not yet functional)
+- Backup task execution not yet implemented
+- Compression and encryption pending implementation
+- Schedule execution requires implementation
+- Credential storage is in-memory only (not persisted)
+- No backup restoration functionality yet
+- Limited error recovery in network operations
+
+### Upcoming Milestones
+1. **v0.2**: Backup task execution with progress tracking
+2. **v0.3**: Compression (ZIP) and basic encryption
+3. **v0.4**: Cloud provider OAuth and file operations
+4. **v0.5**: Schedule execution and automation
+5. **v1.0**: Full feature completion with restoration
+
 ## Contact
 
+**Repository**: [https://github.com/alimajidi62/Automate_Backup_File](https://github.com/alimajidi62/Automate_Backup_File)
 
-
-
-
-Repository: [https://github.com/alimajidi62/Automate_Backup_File](https://github.com/alimajidi62/Automate_Backup_File)
+**Author**: Ali Majidi (alimajidi62)
 
 ## Acknowledgments
 
