@@ -1,5 +1,10 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "sourcestab.h"
+#include "scheduletab.h"
+#include "taskstab.h"
+#include "destinationtab.h"
+#include "settingstab.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QInputDialog>
@@ -23,6 +28,20 @@ void MainWindow::initializeUI()
     // Set window title
     setWindowTitle("Automated Backup File Manager");
     
+    // Create tab widgets
+    sourcesTab = new SourcesTab(this);
+    scheduleTab = new ScheduleTab(this);
+    tasksTab = new TasksTab(this);
+    destinationTab = new DestinationTab(this);
+    settingsTab = new SettingsTab(this);
+    
+    // Add tabs to the tab widget
+    ui->tabWidget->addTab(sourcesTab, "Backup Sources");
+    ui->tabWidget->addTab(scheduleTab, "Schedule");
+    ui->tabWidget->addTab(tasksTab, "Backup Tasks");
+    ui->tabWidget->addTab(destinationTab, "Destination");
+    ui->tabWidget->addTab(settingsTab, "Settings");
+    
     // Initialize status bar
     statusBar()->showMessage("Ready");
 }
@@ -30,31 +49,31 @@ void MainWindow::initializeUI()
 void MainWindow::setupConnections()
 {
     // Source Management Connections
-    connect(ui->btnAddNetwork, &QPushButton::clicked, this, &MainWindow::onAddNetworkPath);
-    connect(ui->btnAddCloud, &QPushButton::clicked, this, &MainWindow::onAddCloudPath);
-    connect(ui->btnRemoveSource, &QPushButton::clicked, this, &MainWindow::onRemoveSource);
-    connect(ui->btnEditSource, &QPushButton::clicked, this, &MainWindow::onEditSource);
-    connect(ui->btnTestConnection, &QPushButton::clicked, this, &MainWindow::onTestConnection);
+    connect(sourcesTab->getBtnAddNetwork(), &QPushButton::clicked, this, &MainWindow::onAddNetworkPath);
+    connect(sourcesTab->getBtnAddCloud(), &QPushButton::clicked, this, &MainWindow::onAddCloudPath);
+    connect(sourcesTab->getBtnRemoveSource(), &QPushButton::clicked, this, &MainWindow::onRemoveSource);
+    connect(sourcesTab->getBtnEditSource(), &QPushButton::clicked, this, &MainWindow::onEditSource);
+    connect(sourcesTab->getBtnTestConnection(), &QPushButton::clicked, this, &MainWindow::onTestConnection);
     
     // Destination Management Connections
-    connect(ui->btnBrowseDestination, &QPushButton::clicked, this, &MainWindow::onBrowseLocalDestination);
-    connect(ui->btnAddCloudDest, &QPushButton::clicked, this, &MainWindow::onAddCloudDestination);
-    connect(ui->btnRemoveDestination, &QPushButton::clicked, this, &MainWindow::onRemoveDestination);
+    connect(destinationTab->getBtnBrowseDestination(), &QPushButton::clicked, this, &MainWindow::onBrowseLocalDestination);
+    connect(destinationTab->getBtnAddCloudDest(), &QPushButton::clicked, this, &MainWindow::onAddCloudDestination);
+    connect(destinationTab->getBtnRemoveDestination(), &QPushButton::clicked, this, &MainWindow::onRemoveDestination);
     
     // Schedule Management Connections
-    connect(ui->btnAddSchedule, &QPushButton::clicked, this, &MainWindow::onAddSchedule);
-    connect(ui->btnEditSchedule, &QPushButton::clicked, this, &MainWindow::onEditSchedule);
-    connect(ui->btnRemoveSchedule, &QPushButton::clicked, this, &MainWindow::onRemoveSchedule);
-    connect(ui->chkEnableScheduler, &QCheckBox::toggled, this, &MainWindow::onEnableSchedule);
+    connect(scheduleTab->getBtnAddSchedule(), &QPushButton::clicked, this, &MainWindow::onAddSchedule);
+    connect(scheduleTab->getBtnEditSchedule(), &QPushButton::clicked, this, &MainWindow::onEditSchedule);
+    connect(scheduleTab->getBtnRemoveSchedule(), &QPushButton::clicked, this, &MainWindow::onRemoveSchedule);
+    connect(scheduleTab->getChkEnableScheduler(), &QCheckBox::toggled, this, &MainWindow::onEnableSchedule);
     
     // Backup Operations Connections
-    connect(ui->btnStartBackup, &QPushButton::clicked, this, &MainWindow::onStartBackup);
-    connect(ui->btnStopBackup, &QPushButton::clicked, this, &MainWindow::onStopBackup);
-    connect(ui->btnViewHistory, &QPushButton::clicked, this, &MainWindow::onViewBackupHistory);
+    connect(tasksTab->getBtnStartBackup(), &QPushButton::clicked, this, &MainWindow::onStartBackup);
+    connect(tasksTab->getBtnStopBackup(), &QPushButton::clicked, this, &MainWindow::onStopBackup);
+    connect(tasksTab->getBtnViewHistory(), &QPushButton::clicked, this, &MainWindow::onViewBackupHistory);
     
     // Settings Connections
-    connect(ui->btnSaveSettings, &QPushButton::clicked, this, &MainWindow::onSaveSettings);
-    connect(ui->btnTestEncryption, &QPushButton::clicked, this, &MainWindow::onTestEncryption);
+    connect(settingsTab->getBtnSaveSettings(), &QPushButton::clicked, this, &MainWindow::onSaveSettings);
+    connect(settingsTab->getBtnTestEncryption(), &QPushButton::clicked, this, &MainWindow::onTestEncryption);
 }
 
 // Source Management Slots

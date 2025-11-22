@@ -17,6 +17,21 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        sourcestab.cpp
+        sourcestab.h
+        sourcestab.ui
+        scheduletab.cpp
+        scheduletab.h
+        scheduletab.ui
+        taskstab.cpp
+        taskstab.h
+        taskstab.ui
+        destinationtab.cpp
+        destinationtab.h
+        destinationtab.ui
+        settingstab.cpp
+        settingstab.h
+        settingstab.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

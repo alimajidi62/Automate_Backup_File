@@ -9,6 +9,12 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
+class SourcesTab;
+class ScheduleTab;
+class TasksTab;
+class DestinationTab;
+class SettingsTab;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -47,6 +53,13 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    
+    // Tab widgets
+    SourcesTab *sourcesTab;
+    ScheduleTab *scheduleTab;
+    TasksTab *tasksTab;
+    DestinationTab *destinationTab;
+    SettingsTab *settingsTab;
     
     void setupConnections();
     void initializeUI();
