@@ -359,13 +359,38 @@ void DestinationManager::checkNetworkDestination(BackupDestination *destination)
 
 void DestinationManager::checkCloudDestination(BackupDestination *destination)
 {
-    // Placeholder for cloud destination checking
-    // In a real implementation, this would connect to cloud APIs
+    if (!destination) {
+        return;
+    }
     
-    // For now, mark as unavailable (not implemented)
-    destination->setStatus(DestinationStatus::Unavailable);
-    destination->setFreeSpace(0);
-    destination->setTotalSpace(0);
+    // Get the cloud provider for this destination
+    CloudProvider *provider = m_cloudProviders.value(destination->getId(), nullptr);
+    
+    if (!provider) {
+        destination->setStatus(DestinationStatus::Error);
+        destination->setFreeSpace(0);
+        destination->setTotalSpace(0);
+        emit error("No cloud provider configured for destination: " + destination->getPath());
+        return;
+    }
+    
+    // Test connection
+    if (provider->testConnection()) {
+        destination->setStatus(DestinationStatus::Available);
+        
+        // Get space information
+        qint64 freeSpace = provider->getAvailableSpace();
+        qint64 totalSpace = provider->getTotalSpace();
+        
+        destination->setFreeSpace(freeSpace);
+        destination->setTotalSpace(totalSpace);
+        destination->setLastChecked(QDateTime::currentDateTime());
+    } else {
+        destination->setStatus(DestinationStatus::Unavailable);
+        destination->setFreeSpace(0);
+        destination->setTotalSpace(0);
+        emit error("Cloud connection failed: " + provider->getLastError());
+    }
 }
 
 bool DestinationManager::validateDestination(BackupDestination *destination) const
@@ -379,4 +404,59 @@ bool DestinationManager::validateDestination(BackupDestination *destination) con
     }
     
     return true;
+}
+
+CloudProvider* DestinationManager::getCloudProvider(const QString &destinationId)
+{
+    return m_cloudProviders.value(destinationId, nullptr);
+}
+
+bool DestinationManager::setCloudProvider(const QString &destinationId, CloudProvider *provider)
+{
+    if (!provider) {
+        return false;
+    }
+    
+    // Remove old provider if exists
+    if (m_cloudProviders.contains(destinationId)) {
+        CloudProvider *oldProvider = m_cloudProviders[destinationId];
+        if (oldProvider) {
+            oldProvider->deleteLater();
+        }
+    }
+    
+    // Set the new provider
+    m_cloudProviders[destinationId] = provider;
+    provider->setParent(this);
+    
+    // Connect signals
+    connect(provider, &CloudProvider::connectionStatusChanged,
+            this, [this, destinationId](CloudProvider::ConnectionStatus status) {
+        BackupDestination *dest = getDestination(destinationId);
+        if (dest) {
+            switch (status) {
+                case CloudProvider::Connected:
+                    dest->setStatus(DestinationStatus::Available);
+                    break;
+                case CloudProvider::Connecting:
+                    dest->setStatus(DestinationStatus::Checking);
+                    break;
+                case CloudProvider::Disconnected:
+                case CloudProvider::Error:
+                    dest->setStatus(DestinationStatus::Unavailable);
+                    break;
+            }
+            emit destinationUpdated(destinationId);
+        }
+    });
+    
+    connect(provider, &CloudProvider::error,
+            this, &DestinationManager::error);
+    
+    return true;
+}
+
+QStringList DestinationManager::getAvailableCloudProviders() const
+{
+    return CloudProviderFactory::getAvailableProviders();
 }

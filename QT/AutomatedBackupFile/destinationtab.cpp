@@ -1,5 +1,7 @@
 #include "destinationtab.h"
 #include "ui_destinationtab.h"
+#include "cloudprovider.h"
+#include "cloudauthdialog.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QInputDialog>
@@ -73,47 +75,138 @@ void DestinationTab::onAddLocalDestination()
 
 void DestinationTab::onAddCloudDestination()
 {
-    QStringList cloudProviders = {"Google Drive", "OneDrive", "Dropbox", "AWS S3", "Custom"};
+    // Get available cloud providers
+    QStringList cloudProviders = m_destinationManager->getAvailableCloudProviders();
     
     bool ok;
-    QString provider = QInputDialog::getItem(this, tr("Cloud Provider"),
-                                             tr("Select cloud provider:"),
-                                             cloudProviders, 0, false, &ok);
+    QString providerName = QInputDialog::getItem(this, tr("Cloud Provider"),
+                                                 tr("Select cloud provider:"),
+                                                 cloudProviders, 0, false, &ok);
     
-    if (!ok || provider.isEmpty()) {
+    if (!ok || providerName.isEmpty()) {
         return;
     }
     
-    QString path = QInputDialog::getText(this, tr("Cloud Path"),
-                                         tr("Enter cloud path or URL:"),
-                                         QLineEdit::Normal, "", &ok);
-    
-    if (!ok || path.isEmpty()) {
+    // Check if provider is fully implemented
+    if (providerName == "OneDrive" || providerName == "Amazon S3") {
+        QMessageBox::information(this, tr("Not Implemented"), 
+                                tr("%1 support is not fully implemented yet.\n\n"
+                                   "You can use Test Mode to simulate cloud storage.").arg(providerName));
         return;
     }
     
-    auto *destination = new BackupDestination(path, DestinationType::Cloud);
+    // Show authentication dialog with instructions
+    CloudAuthDialog authDialog(providerName, this);
+    if (authDialog.exec() != QDialog::Accepted) {
+        return;
+    }
     
-    // Get credentials if needed
-    QString username = QInputDialog::getText(this, tr("Username"),
-                                            tr("Enter username (optional):"),
-                                            QLineEdit::Normal, "", &ok);
-    if (ok && !username.isEmpty()) {
-        destination->setUsername(username);
+    QMap<QString, QString> credentials = authDialog.getCredentials();
+    
+    // Create cloud provider instance
+    CloudProvider *provider = nullptr;
+    
+    if (authDialog.isTestModeEnabled()) {
+        // Use mock provider for testing
+        provider = new MockCloudProvider(this);
+    } else {
+        // Create real provider
+        provider = CloudProviderFactory::createProvider(providerName, this);
+        if (!provider) {
+            QMessageBox::critical(this, tr("Error"), tr("Failed to create cloud provider"));
+            return;
+        }
         
-        QString password = QInputDialog::getText(this, tr("Password"),
-                                                tr("Enter password:"),
-                                                QLineEdit::Password, "", &ok);
-        if (ok) {
-            destination->setPassword(password);
+        // Check if credentials are provided
+        if (credentials.value("access_token").isEmpty() && 
+            credentials.value("client_id").isEmpty()) {
+            QMessageBox::warning(this, tr("Missing Credentials"), 
+                                tr("Please provide authentication credentials or enable Test Mode"));
+            delete provider;
+            return;
         }
     }
     
+    // Authenticate with the provider
+    if (!provider->authenticate(credentials)) {
+        QMessageBox::critical(this, tr("Authentication Failed"), 
+                             tr("Failed to authenticate with %1: %2")
+                             .arg(providerName, provider->getLastError()));
+        delete provider;
+        return;
+    }
+    
+    // Test connection
+    QMessageBox *progressMsg = new QMessageBox(this);
+    progressMsg->setWindowTitle(tr("Connecting"));
+    progressMsg->setText(tr("Testing connection to %1...").arg(provider->getProviderName()));
+    progressMsg->setStandardButtons(QMessageBox::NoButton);
+    progressMsg->show();
+    QApplication::processEvents();
+    
+    bool connected = provider->testConnection();
+    progressMsg->close();
+    delete progressMsg;
+    
+    if (!connected) {
+        QMessageBox::critical(this, tr("Connection Failed"), 
+                             tr("Failed to connect to %1: %2")
+                             .arg(provider->getProviderName(), provider->getLastError()));
+        delete provider;
+        return;
+    }
+    
+    // Get a name/path for this destination
+    QString defaultName = authDialog.isTestModeEnabled() ? 
+                         provider->getProviderName() : providerName;
+    QString name = QInputDialog::getText(this, tr("Destination Name"),
+                                        tr("Enter a name for this destination:"),
+                                        QLineEdit::Normal, defaultName, &ok);
+    
+    if (!ok || name.isEmpty()) {
+        delete provider;
+        return;
+    }
+    
+    // Create destination
+    auto *destination = new BackupDestination(name, DestinationType::Cloud);
+    if (authDialog.isTestModeEnabled()) {
+        destination->setUsername("[Test Mode]");
+    } else {
+        destination->setUsername(credentials.value("access_token").left(20) + "..."); // Store masked token
+    }
+    
     if (m_destinationManager->addDestination(destination)) {
+        // Associate the cloud provider with this destination
+        m_destinationManager->setCloudProvider(destination->getId(), provider);
+        
+        // Show space information
+        qint64 available = provider->getAvailableSpace();
+        qint64 total = provider->getTotalSpace();
+        
+        // Format bytes helper
+        auto formatBytes = [](qint64 bytes) -> QString {
+            const qint64 KB = 1024;
+            const qint64 MB = KB * 1024;
+            const qint64 GB = MB * 1024;
+            const qint64 TB = GB * 1024;
+            
+            if (bytes >= TB) return QString::number(bytes / (double)TB, 'f', 2) + " TB";
+            if (bytes >= GB) return QString::number(bytes / (double)GB, 'f', 2) + " GB";
+            if (bytes >= MB) return QString::number(bytes / (double)MB, 'f', 2) + " MB";
+            if (bytes >= KB) return QString::number(bytes / (double)KB, 'f', 2) + " KB";
+            return QString::number(bytes) + " bytes";
+        };
+        
+        QString spaceInfo = tr("Available: %1 / Total: %2")
+            .arg(formatBytes(available))
+            .arg(formatBytes(total));
+        
         QMessageBox::information(this, tr("Success"), 
-                                tr("Cloud destination added. Note: Cloud integration is not yet fully implemented."));
+                                tr("Cloud destination added successfully!\n\n%1").arg(spaceInfo));
     } else {
         delete destination;
+        delete provider;
     }
 }
 

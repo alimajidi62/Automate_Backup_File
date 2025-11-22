@@ -3,9 +3,11 @@
 
 #include <QObject>
 #include <QList>
-#include <QFuture>
+#include <QString>
+#include <QMap>
 #include "backupdestination.h"
 #include "retentionpolicy.h"
+#include "cloudprovider.h"
 
 class DestinationManager : public QObject
 {
@@ -42,6 +44,11 @@ public:
     bool saveToFile(const QString &filePath);
     bool loadFromFile(const QString &filePath);
     
+    // Cloud Provider Management
+    CloudProvider* getCloudProvider(const QString &destinationId);
+    bool setCloudProvider(const QString &destinationId, CloudProvider *provider);
+    QStringList getAvailableCloudProviders() const;
+
 signals:
     void destinationAdded(const QString &destinationId);
     void destinationRemoved(const QString &destinationId);
@@ -56,6 +63,7 @@ private slots:
 private:
     QList<BackupDestination*> m_destinations;
     RetentionPolicy m_retentionPolicy;
+    QMap<QString, CloudProvider*> m_cloudProviders; // Maps destination ID to cloud provider
     
     void checkLocalDestination(BackupDestination *destination);
     void checkNetworkDestination(BackupDestination *destination);
