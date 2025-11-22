@@ -48,12 +48,8 @@ void MainWindow::initializeUI()
 
 void MainWindow::setupConnections()
 {
-    // Source Management Connections
-    connect(sourcesTab->getBtnAddNetwork(), &QPushButton::clicked, this, &MainWindow::onAddNetworkPath);
-    connect(sourcesTab->getBtnAddCloud(), &QPushButton::clicked, this, &MainWindow::onAddCloudPath);
-    connect(sourcesTab->getBtnRemoveSource(), &QPushButton::clicked, this, &MainWindow::onRemoveSource);
-    connect(sourcesTab->getBtnEditSource(), &QPushButton::clicked, this, &MainWindow::onEditSource);
-    connect(sourcesTab->getBtnTestConnection(), &QPushButton::clicked, this, &MainWindow::onTestConnection);
+    // Source Management - handled internally by SourcesTab
+    // No connections needed here as SourcesTab manages its own backend
     
     // Destination Management - handled internally by DestinationTab
     // No connections needed here as DestinationTab manages its own backend

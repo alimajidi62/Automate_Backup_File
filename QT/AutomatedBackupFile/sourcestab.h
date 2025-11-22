@@ -22,6 +22,7 @@ public:
     ~SourcesTab();
     
     // Public accessors for widgets
+    QPushButton* getBtnAddLocal();
     QPushButton* getBtnAddNetwork();
     QPushButton* getBtnAddCloud();
     QPushButton* getBtnEditSource();

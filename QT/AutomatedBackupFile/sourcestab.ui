@@ -23,6 +23,13 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
+         <widget class="QPushButton" name="btnAddLocal">
+          <property name="text">
+           <string>Add Local Folder</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="btnAddNetwork">
           <property name="text">
            <string>Add Network Path</string>

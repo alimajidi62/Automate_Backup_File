@@ -51,6 +51,14 @@ void SourcesTab::setupConnections()
         QMessageBox::critical(this, tr("Error"), error);
     });
     
+    // Connect UI buttons to slots
+    connect(ui->btnAddLocal, &QPushButton::clicked, this, &SourcesTab::onAddLocalSource);
+    connect(ui->btnAddNetwork, &QPushButton::clicked, this, &SourcesTab::onAddNetworkSource);
+    connect(ui->btnAddCloud, &QPushButton::clicked, this, &SourcesTab::onAddCloudSource);
+    connect(ui->btnEditSource, &QPushButton::clicked, this, &SourcesTab::onEditSource);
+    connect(ui->btnRemoveSource, &QPushButton::clicked, this, &SourcesTab::onRemoveSource);
+    connect(ui->btnTestConnection, &QPushButton::clicked, this, &SourcesTab::onTestConnection);
+    
     // Connect change monitoring settings
     connect(ui->chkMonitorChanges, &QCheckBox::toggled,
             m_sourceManager, &SourceManager::enableChangeMonitoring);
