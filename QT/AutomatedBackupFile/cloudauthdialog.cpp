@@ -40,16 +40,19 @@ void CloudAuthDialog::setupUI()
     m_instructionsText->setOpenExternalLinks(true);
     mainLayout->addWidget(m_instructionsText);
     
+    // Create form layout for credentials
+    QFormLayout *formLayout = new QFormLayout();
+    
     // Provider-specific UI
     if (m_providerName == "Google Drive") {
-        createGoogleDriveUI();
+        createGoogleDriveUI(formLayout);
     } else if (m_providerName == "Dropbox") {
-        createDropboxUI();
+        createDropboxUI(formLayout);
     } else {
-        createGenericUI();
+        createGenericUI(formLayout);
     }
     
-    mainLayout->addLayout(dynamic_cast<QLayout*>(children().last()));
+    mainLayout->addLayout(formLayout);
     
     // Buttons
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -60,7 +63,7 @@ void CloudAuthDialog::setupUI()
     resize(600, 500);
 }
 
-void CloudAuthDialog::createGoogleDriveUI()
+void CloudAuthDialog::createGoogleDriveUI(QFormLayout *formLayout)
 {
     m_instructionsText->setHtml(
         tr("<h3>Google Drive Authentication</h3>"
@@ -83,8 +86,6 @@ void CloudAuthDialog::createGoogleDriveUI()
            "<p><b>OR</b> enable Test Mode above to simulate cloud storage without real credentials.</p>")
     );
     
-    QFormLayout *formLayout = new QFormLayout();
-    
     m_clientIdEdit = new QLineEdit();
     m_clientIdEdit->setPlaceholderText("Your OAuth Client ID (optional)");
     formLayout->addRow(tr("Client ID:"), m_clientIdEdit);
@@ -97,13 +98,9 @@ void CloudAuthDialog::createGoogleDriveUI()
     m_accessTokenEdit = new QLineEdit();
     m_accessTokenEdit->setPlaceholderText("Paste access token here");
     formLayout->addRow(tr("Access Token:"), m_accessTokenEdit);
-    
-    QWidget *formWidget = new QWidget();
-    formWidget->setLayout(formLayout);
-    formWidget->setObjectName("formWidget");
 }
 
-void CloudAuthDialog::createDropboxUI()
+void CloudAuthDialog::createDropboxUI(QFormLayout *formLayout)
 {
     m_instructionsText->setHtml(
         tr("<h3>Dropbox Authentication</h3>"
@@ -125,18 +122,12 @@ void CloudAuthDialog::createDropboxUI()
            "<p><b>OR</b> enable Test Mode above to simulate cloud storage without real credentials.</p>")
     );
     
-    QFormLayout *formLayout = new QFormLayout();
-    
     m_accessTokenEdit = new QLineEdit();
     m_accessTokenEdit->setPlaceholderText("Paste access token here");
     formLayout->addRow(tr("Access Token:"), m_accessTokenEdit);
-    
-    QWidget *formWidget = new QWidget();
-    formWidget->setLayout(formLayout);
-    formWidget->setObjectName("formWidget");
 }
 
-void CloudAuthDialog::createGenericUI()
+void CloudAuthDialog::createGenericUI(QFormLayout *formLayout)
 {
     m_instructionsText->setHtml(
         tr("<h3>Cloud Authentication</h3>"
@@ -145,15 +136,9 @@ void CloudAuthDialog::createGenericUI()
            "<p><b>OR</b> enable Test Mode above to simulate cloud storage without real credentials.</p>")
     );
     
-    QFormLayout *formLayout = new QFormLayout();
-    
     m_accessTokenEdit = new QLineEdit();
     m_accessTokenEdit->setPlaceholderText("API Key / Access Token");
     formLayout->addRow(tr("Credentials:"), m_accessTokenEdit);
-    
-    QWidget *formWidget = new QWidget();
-    formWidget->setLayout(formLayout);
-    formWidget->setObjectName("formWidget");
 }
 
 void CloudAuthDialog::onTestModeChanged(int state)

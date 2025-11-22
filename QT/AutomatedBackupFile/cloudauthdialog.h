@@ -8,6 +8,8 @@
 #include <QLabel>
 #include <QMap>
 
+class QFormLayout;
+
 class CloudAuthDialog : public QDialog
 {
     Q_OBJECT
@@ -25,9 +27,9 @@ private slots:
 
 private:
     void setupUI();
-    void createGoogleDriveUI();
-    void createDropboxUI();
-    void createGenericUI();
+    void createGoogleDriveUI(QFormLayout *formLayout);
+    void createDropboxUI(QFormLayout *formLayout);
+    void createGenericUI(QFormLayout *formLayout);
 
     QString m_providerName;
     QMap<QString, QString> m_credentials;
