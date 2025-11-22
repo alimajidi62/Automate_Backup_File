@@ -55,10 +55,8 @@ void MainWindow::setupConnections()
     connect(sourcesTab->getBtnEditSource(), &QPushButton::clicked, this, &MainWindow::onEditSource);
     connect(sourcesTab->getBtnTestConnection(), &QPushButton::clicked, this, &MainWindow::onTestConnection);
     
-    // Destination Management Connections
-    connect(destinationTab->getBtnBrowseDestination(), &QPushButton::clicked, this, &MainWindow::onBrowseLocalDestination);
-    connect(destinationTab->getBtnAddCloudDest(), &QPushButton::clicked, this, &MainWindow::onAddCloudDestination);
-    connect(destinationTab->getBtnRemoveDestination(), &QPushButton::clicked, this, &MainWindow::onRemoveDestination);
+    // Destination Management - handled internally by DestinationTab
+    // No connections needed here as DestinationTab manages its own backend
     
     // Schedule Management Connections
     connect(scheduleTab->getBtnAddSchedule(), &QPushButton::clicked, this, &MainWindow::onAddSchedule);
@@ -102,20 +100,20 @@ void MainWindow::onTestConnection()
     statusBar()->showMessage("Test Connection - Not yet implemented");
 }
 
-// Destination Management Slots
+// Destination Management Slots - Now handled by DestinationTab
 void MainWindow::onBrowseLocalDestination()
 {
-    statusBar()->showMessage("Browse Local Destination - Not yet implemented");
+    statusBar()->showMessage("Destination management is handled in the Destination tab");
 }
 
 void MainWindow::onAddCloudDestination()
 {
-    statusBar()->showMessage("Add Cloud Destination - Not yet implemented");
+    statusBar()->showMessage("Destination management is handled in the Destination tab");
 }
 
 void MainWindow::onRemoveDestination()
 {
-    statusBar()->showMessage("Remove Destination - Not yet implemented");
+    statusBar()->showMessage("Destination management is handled in the Destination tab");
 }
 
 // Schedule Management Slots
