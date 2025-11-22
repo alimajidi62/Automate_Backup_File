@@ -45,9 +45,9 @@ QTabBar::tab:hover:!selected {
 
 /* ===== Push Button Styles ===== */
 QPushButton {
-    background-color: #0e639c;
-    color: white;
-    border: none;
+    background-color: #3e3e42;
+    color: #cccccc;
+    border: 1px solid #555555;
     border-radius: 4px;
     padding: 8px 16px;
     font-weight: 500;
@@ -55,16 +55,18 @@ QPushButton {
 }
 
 QPushButton:hover {
-    background-color: #1177bb;
+    background-color: #505052;
+    border: 1px solid #007acc;
 }
 
 QPushButton:pressed {
-    background-color: #007acc;
+    background-color: #2d2d30;
 }
 
 QPushButton:disabled {
-    background-color: #555555;
-    color: #808080;
+    background-color: #3c3c3c;
+    color: #6e6e6e;
+    border: 1px solid #3c3c3c;
 }
 
 /* Primary Action Buttons */
@@ -73,7 +75,9 @@ QPushButton#btnAddLocal,
 QPushButton#btnAddDestination,
 QPushButton#btnAddSchedule,
 QPushButton#btnSaveSettings {
-    background-color: #0e7d30;
+    background-color: #2d4a2e;
+    color: #a3d9a5;
+    border: 1px solid #3d5a3e;
 }
 
 QPushButton#btnStartBackup:hover,
@@ -81,7 +85,8 @@ QPushButton#btnAddLocal:hover,
 QPushButton#btnAddDestination:hover,
 QPushButton#btnAddSchedule:hover,
 QPushButton#btnSaveSettings:hover {
-    background-color: #0a9141;
+    background-color: #3a5f3c;
+    border: 1px solid #4ec9b0;
 }
 
 /* Danger Buttons */
@@ -89,14 +94,17 @@ QPushButton#btnRemoveSource,
 QPushButton#btnRemoveDestination,
 QPushButton#btnRemoveSchedule,
 QPushButton#btnStopBackup {
-    background-color: #c72e2e;
+    background-color: #4a2d2d;
+    color: #e5a3a3;
+    border: 1px solid #5a3d3d;
 }
 
 QPushButton#btnRemoveSource:hover,
 QPushButton#btnRemoveDestination:hover,
 QPushButton#btnRemoveSchedule:hover,
 QPushButton#btnStopBackup:hover {
-    background-color: #e13838;
+    background-color: #5f3a3a;
+    border: 1px solid #f48771;
 }
 
 /* Secondary Buttons */
@@ -106,7 +114,9 @@ QPushButton#btnEditSchedule,
 QPushButton#btnTestConnection,
 QPushButton#btnTestEncryption,
 QPushButton#btnViewHistory {
-    background-color: #505050;
+    background-color: #3e3e42;
+    color: #cccccc;
+    border: 1px solid #555555;
 }
 
 QPushButton#btnEditSource:hover,
@@ -115,18 +125,22 @@ QPushButton#btnEditSchedule:hover,
 QPushButton#btnTestConnection:hover,
 QPushButton#btnTestEncryption:hover,
 QPushButton#btnViewHistory:hover {
-    background-color: #686868;
+    background-color: #505052;
+    border: 1px solid #7f7f7f;
 }
 
 /* Info Buttons */
 QPushButton#btnAddNetwork,
 QPushButton#btnAddCloud {
-    background-color: #68217a;
+    background-color: #3d2d4a;
+    color: #caaad9;
+    border: 1px solid #4d3d5a;
 }
 
 QPushButton#btnAddNetwork:hover,
 QPushButton#btnAddCloud:hover {
-    background-color: #7c2d91;
+    background-color: #4c3a5f;
+    border: 1px solid #9b59b6;
 }
 
 /* ===== Group Box Styles ===== */
