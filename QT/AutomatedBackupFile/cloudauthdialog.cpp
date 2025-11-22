@@ -7,6 +7,9 @@
 #include <QGroupBox>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QFrame>
+#include <QLabel>
+#include <QFont>
 
 CloudAuthDialog::CloudAuthDialog(const QString &providerName, QWidget *parent)
     : QDialog(parent)
@@ -27,6 +30,16 @@ CloudAuthDialog::~CloudAuthDialog()
 void CloudAuthDialog::setupUI()
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    mainLayout->setSpacing(15);
+    mainLayout->setContentsMargins(20, 20, 20, 20);
+    
+    // Title label
+    QLabel *titleLabel = new QLabel(tr("Configure Cloud Storage Authentication"));
+    QFont titleFont = titleLabel->font();
+    titleFont.setPointSize(12);
+    titleFont.setBold(true);
+    titleLabel->setFont(titleFont);
+    mainLayout->addWidget(titleLabel);
     
     // Test mode checkbox
     QCheckBox *testModeCheck = new QCheckBox(tr("Enable Test Mode (Mock Cloud Provider)"));
@@ -34,14 +47,24 @@ void CloudAuthDialog::setupUI()
     connect(testModeCheck, &QCheckBox::stateChanged, this, &CloudAuthDialog::onTestModeChanged);
     mainLayout->addWidget(testModeCheck);
     
-    // Instructions
-    m_instructionsText = new QTextBrowser();
-    m_instructionsText->setMaximumHeight(150);
-    m_instructionsText->setOpenExternalLinks(true);
-    mainLayout->addWidget(m_instructionsText);
+    // Instructions in a styled frame
+    QFrame *instructionsFrame = new QFrame();
+    instructionsFrame->setObjectName("infoFrame");
+    QVBoxLayout *frameLayout = new QVBoxLayout(instructionsFrame);
     
-    // Create form layout for credentials
-    QFormLayout *formLayout = new QFormLayout();
+    m_instructionsText = new QTextBrowser();
+    m_instructionsText->setMaximumHeight(180);
+    m_instructionsText->setOpenExternalLinks(true);
+    m_instructionsText->setFrameShape(QFrame::NoFrame);
+    frameLayout->addWidget(m_instructionsText);
+    
+    mainLayout->addWidget(instructionsFrame);
+    
+    // Credentials group box
+    QGroupBox *credentialsGroup = new QGroupBox(tr("Credentials"));
+    QFormLayout *formLayout = new QFormLayout(credentialsGroup);
+    formLayout->setSpacing(10);
+    formLayout->setContentsMargins(15, 20, 15, 15);
     
     // Provider-specific UI
     if (m_providerName == "Google Drive") {
@@ -52,7 +75,10 @@ void CloudAuthDialog::setupUI()
         createGenericUI(formLayout);
     }
     
-    mainLayout->addLayout(formLayout);
+    mainLayout->addWidget(credentialsGroup);
+    
+    // Add spacer
+    mainLayout->addStretch();
     
     // Buttons
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -60,7 +86,7 @@ void CloudAuthDialog::setupUI()
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
     mainLayout->addWidget(buttonBox);
     
-    resize(600, 500);
+    resize(700, 600);
 }
 
 void CloudAuthDialog::createGoogleDriveUI(QFormLayout *formLayout)

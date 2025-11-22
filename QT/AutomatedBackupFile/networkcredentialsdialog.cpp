@@ -4,6 +4,8 @@
 #include <QDialogButtonBox>
 #include <QLabel>
 #include <QGroupBox>
+#include <QFrame>
+#include <QFont>
 
 NetworkCredentialsDialog::NetworkCredentialsDialog(const QString &networkPath, QWidget *parent)
     : QDialog(parent)
@@ -20,17 +22,35 @@ NetworkCredentialsDialog::~NetworkCredentialsDialog()
 void NetworkCredentialsDialog::setupUI()
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    mainLayout->setSpacing(15);
+    mainLayout->setContentsMargins(20, 20, 20, 20);
     
-    // Info label
+    // Title label
+    QLabel *titleLabel = new QLabel(tr("Network Authentication Required"));
+    QFont titleFont = titleLabel->font();
+    titleFont.setPointSize(12);
+    titleFont.setBold(true);
+    titleLabel->setFont(titleFont);
+    mainLayout->addWidget(titleLabel);
+    
+    // Info frame
+    QFrame *infoFrame = new QFrame();
+    infoFrame->setObjectName("infoFrame");
+    QVBoxLayout *infoLayout = new QVBoxLayout(infoFrame);
+    
     QLabel *infoLabel = new QLabel(
-        tr("The network path requires authentication:\n%1").arg(m_networkPath)
+        tr("The network path requires authentication:\n<b>%1</b>").arg(m_networkPath)
     );
     infoLabel->setWordWrap(true);
-    mainLayout->addWidget(infoLabel);
+    infoLayout->addWidget(infoLabel);
+    
+    mainLayout->addWidget(infoFrame);
     
     // Credentials group
     QGroupBox *credentialsGroup = new QGroupBox(tr("Credentials"));
     QFormLayout *formLayout = new QFormLayout(credentialsGroup);
+    formLayout->setSpacing(12);
+    formLayout->setContentsMargins(15, 20, 15, 15);
     
     // Username
     m_usernameEdit = new QLineEdit();
@@ -55,14 +75,19 @@ void NetworkCredentialsDialog::setupUI()
     m_saveCredentialsCheck->setChecked(true);
     mainLayout->addWidget(m_saveCredentialsCheck);
     
-    // Warning label
+    // Warning frame
+    QFrame *warningFrame = new QFrame();
+    warningFrame->setObjectName("warningFrame");
+    QVBoxLayout *warningLayout = new QVBoxLayout(warningFrame);
+    
     QLabel *warningLabel = new QLabel(
-        tr("<i>Note: Credentials are stored in memory only during this session "
-           "and are not saved to disk for security reasons.</i>")
+        tr("⚠️ Note: Credentials are stored in memory only during this session "
+           "and are not saved to disk for security reasons.")
     );
     warningLabel->setWordWrap(true);
-    warningLabel->setStyleSheet("color: gray;");
-    mainLayout->addWidget(warningLabel);
+    warningLayout->addWidget(warningLabel);
+    
+    mainLayout->addWidget(warningFrame);
     
     // Buttons
     QDialogButtonBox *buttonBox = new QDialogButtonBox(
@@ -72,7 +97,7 @@ void NetworkCredentialsDialog::setupUI()
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
     mainLayout->addWidget(buttonBox);
     
-    resize(450, 300);
+    resize(500, 400);
     
     // Set focus to username field
     m_usernameEdit->setFocus();

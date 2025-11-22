@@ -48,6 +48,8 @@ set(PROJECT_SOURCES
         sourcemanager.h
         networkcredentialsdialog.cpp
         networkcredentialsdialog.h
+        resources.qrc
+        styles.qss
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
