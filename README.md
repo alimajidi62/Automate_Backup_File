@@ -11,6 +11,20 @@ This project provides an intelligent backup system that automatically tracks fil
 
 🚧 **In Development** - This project currently has implementations in both Qt (C++) and WPF (C#/.NET). Active development is ongoing.
 
+### ✅ Completed
+- **Qt UI Framework**: Fully functional modular UI with 5 main tabs
+  - Backup Sources tab for managing network/cloud paths
+  - Schedule tab for configuring automated backups
+  - Backup Tasks tab with progress tracking and todo list
+  - Destination tab for backup locations and retention policies
+  - Settings tab for compression, encryption, and notifications
+- **Modular Architecture**: UI split into separate, maintainable widget files
+- **Cross-platform Build**: Successfully builds on Windows with MSVC 2022
+
+### 🔄 In Progress
+- Backend implementation for UI controls
+- File monitoring and change detection system
+
 ## Planned Features
 
 ### 1. **Change Detection**
@@ -76,13 +90,18 @@ This project provides an intelligent backup system that automatically tracks fil
 
 ```
 Automate_Backup_File/
+├── README.md
 ├── QT/                          # Qt/C++ implementation
 │   └── AutomatedBackupFile/
-│       ├── main.cpp
-│       ├── mainwindow.cpp
-│       ├── mainwindow.h
-│       ├── mainwindow.ui
-│       └── CMakeLists.txt
+│       ├── main.cpp             # Application entry point
+│       ├── mainwindow.cpp/h/ui  # Main window (tab container)
+│       ├── sourcestab.cpp/h/ui  # Backup sources management
+│       ├── scheduletab.cpp/h/ui # Schedule configuration
+│       ├── taskstab.cpp/h/ui    # Backup operations & tasks
+│       ├── destinationtab.cpp/h/ui  # Destination settings
+│       ├── settingstab.cpp/h/ui # App settings & encryption
+│       ├── CMakeLists.txt       # Build configuration
+│       └── build/               # Build output directory
 │
 └── WPF/                         # WPF/C# implementation
     └── AutomatedBackupFile/
@@ -111,7 +130,17 @@ Automate_Backup_File/
 
 ### Building from Source
 
-#### Qt Version:
+#### Qt Version (Windows with MSVC):
+```powershell
+cd QT/AutomatedBackupFile
+mkdir build
+cd build
+$env:CMAKE_PREFIX_PATH = "C:\Qt\6.9.1\msvc2022_64"
+cmake ..
+cmake --build . --config Debug
+```
+
+#### Qt Version (Linux/macOS):
 ```bash
 cd QT/AutomatedBackupFile
 mkdir build && cd build
@@ -129,30 +158,99 @@ msbuild AutomatedBackupFile.sln /p:Configuration=Release
 
 ## Usage
 
-*Documentation will be added as features are implemented*
+### Running the Application
+
+#### Qt Version:
+After building, run the executable:
+```powershell
+# Windows
+.\build\Debug\AutomatedBackupFile.exe
+
+# Linux/macOS
+./build/AutomatedBackupFile
+```
+
+### UI Overview
+
+The application features a tabbed interface with the following sections:
+
+1. **Backup Sources**: Add and manage network paths and cloud storage locations
+2. **Schedule**: Configure automated backup schedules (daily, weekly, monthly, custom)
+3. **Backup Tasks**: Monitor active backups, view pending tasks, and check logs
+4. **Destination**: Set backup destinations and configure retention policies
+5. **Settings**: Configure compression, encryption (AES-256), and notifications
+
+*Note: UI is fully functional, backend implementation in progress*
 
 ## Roadmap
 
-- [ ] Basic UI framework (Qt and WPF)
+### Phase 1: UI Development ✅
+- [x] Basic Qt UI framework with modular architecture
+- [x] Tab-based interface (Sources, Schedule, Tasks, Destination, Settings)
+- [x] Modular widget system for maintainability
+- [ ] WPF UI implementation
+
+### Phase 2: Core Functionality (In Progress)
 - [ ] File system monitoring implementation
 - [ ] Change detection algorithm
-- [ ] Network path support
-- [ ] Cloud storage integration
-- [ ] Compression engine
-- [ ] Encryption system (AES-256)
-- [ ] Credential management
-- [ ] Scheduler implementation
-- [ ] Todo list generator
-- [ ] Multi-threading for parallel backups
+- [ ] Network path connection and validation
+- [ ] Basic backup operation (copy files)
 - [ ] Progress tracking and reporting
+
+### Phase 3: Advanced Features
+- [ ] Cloud storage integration (Google Drive, OneDrive, Dropbox, S3)
+- [ ] Compression engine (ZIP, 7Z, TAR.GZ)
+- [ ] Encryption system (AES-256)
+- [ ] Secure credential management
+- [ ] Scheduler implementation with cron-like syntax
+- [ ] Todo list auto-generation
+
+### Phase 4: Optimization & Polish
+- [ ] Multi-threading for parallel backups
 - [ ] Backup restoration functionality
-- [ ] Logging system
-- [ ] Configuration file support
-- [ ] Cross-platform testing and optimization
+- [ ] Comprehensive logging system
+- [ ] Configuration file import/export
+- [ ] Performance optimization
+- [ ] Cross-platform testing (Windows, Linux, macOS)
+
+### Phase 5: Enterprise Features
+- [ ] Email notifications
+- [ ] Backup verification and integrity checks
+- [ ] Incremental and differential backups
+- [ ] Backup profiles and templates
+- [ ] Command-line interface
+- [ ] REST API for remote management
+
+## Architecture
+
+### Modular UI Design
+
+The Qt implementation uses a modular architecture where each tab is a separate widget:
+
+- **MainWindow**: Container for tab widget and menu bar
+- **SourcesTab**: Manages backup source locations
+- **ScheduleTab**: Handles backup scheduling
+- **TasksTab**: Displays backup operations and logs
+- **DestinationTab**: Configures backup destinations
+- **SettingsTab**: Application settings and security
+
+This design provides:
+- Easy maintenance and updates
+- Better code organization
+- Reduced merge conflicts in team development
+- Reusable components
+- Clear separation of concerns
 
 ## Contributing
 
 Contributions are welcome! Please feel free to submit issues or pull requests.
+
+### Development Guidelines
+- Follow Qt coding conventions for C++ code
+- Keep UI and business logic separated
+- Add comments for complex algorithms
+- Update documentation when adding features
+- Test on multiple platforms when possible
 
 ## Security Considerations
 
