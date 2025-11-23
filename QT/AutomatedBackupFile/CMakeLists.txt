@@ -48,6 +48,8 @@ set(PROJECT_SOURCES
         sourcemanager.h
         networkcredentialsdialog.cpp
         networkcredentialsdialog.h
+        backupfilemonitor.cpp
+        backupfilemonitor.h
         resources.qrc
         styles.qss
 )
