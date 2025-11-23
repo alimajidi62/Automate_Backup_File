@@ -6,14 +6,17 @@
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QTableWidgetItem>
+#include <QDebug>
 
 DestinationTab::DestinationTab(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::DestinationTab)
     , m_destinationManager(new DestinationManager(this))
+    , m_backupFileMonitor(new BackupFileMonitor(this))
 {
     ui->setupUi(this);
     setupConnections();
+    setupFileMonitorConnections();
     
     // Initialize retention policy UI
     ui->spinRetentionDays->setValue(m_destinationManager->getRetentionPolicy().getRetentionDays());
@@ -24,15 +27,27 @@ DestinationTab::DestinationTab(QWidget *parent)
     ui->tableDestinations->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->tableDestinations->horizontalHeader()->setStretchLastSection(true);
     
-    // Load saved destinations
+    // Load saved destinations and file monitor state
     m_destinationManager->loadFromFile("destinations.json");
+    m_backupFileMonitor->loadState("file_monitor.json");
+    
+    // Add existing destinations to file monitor
+    QList<BackupDestination*> destinations = m_destinationManager->getAllDestinations();
+    for (BackupDestination *dest : destinations) {
+        if (dest->getType() == DestinationType::Local || dest->getType() == DestinationType::Network) {
+            m_backupFileMonitor->addDestinationPath(dest->getId(), dest->getPath());
+        }
+    }
+    
     refreshDestinationTable();
+    updateMonitoringStatus();
 }
 
 DestinationTab::~DestinationTab()
 {
-    // Save destinations before destroying
+    // Save destinations and file monitor state before destroying
     m_destinationManager->saveToFile("destinations.json");
+    m_backupFileMonitor->saveState("file_monitor.json");
     delete ui;
 }
 
@@ -54,6 +69,23 @@ void DestinationTab::setupConnections()
     connect(m_destinationManager, &DestinationManager::error, this, &DestinationTab::onError);
 }
 
+void DestinationTab::setupFileMonitorConnections()
+{
+    // Connect file monitor signals
+    connect(m_backupFileMonitor, &BackupFileMonitor::fileAdded,
+            this, &DestinationTab::onFileAdded);
+    connect(m_backupFileMonitor, &BackupFileMonitor::fileModified,
+            this, &DestinationTab::onFileModified);
+    connect(m_backupFileMonitor, &BackupFileMonitor::fileDeleted,
+            this, &DestinationTab::onFileDeleted);
+    connect(m_backupFileMonitor, &BackupFileMonitor::scanCompleted,
+            this, &DestinationTab::onScanCompleted);
+    connect(m_backupFileMonitor, &BackupFileMonitor::changeDetected,
+            this, &DestinationTab::onChangeDetected);
+    connect(m_backupFileMonitor, &BackupFileMonitor::monitoringStateChanged,
+            this, &DestinationTab::onMonitoringStateChanged);
+}
+
 void DestinationTab::onAddLocalDestination()
 {
     QString path = QFileDialog::getExistingDirectory(this, tr("Select Backup Destination"),
@@ -67,6 +99,8 @@ void DestinationTab::onAddLocalDestination()
     auto *destination = new BackupDestination(path, DestinationType::Local);
     
     if (m_destinationManager->addDestination(destination)) {
+        // Add to file monitor
+        m_backupFileMonitor->addDestinationPath(destination->getId(), path);
         QMessageBox::information(this, tr("Success"), tr("Destination added successfully"));
     } else {
         delete destination;
@@ -228,7 +262,12 @@ void DestinationTab::onRemoveDestination()
                                                               QMessageBox::Yes | QMessageBox::No);
     
     if (reply == QMessageBox::Yes) {
-        m_destinationManager->removeDestination(destinationId);
+        // Remove from file monitor first
+        m_backupFileMonitor->removeDestinationPath(destinationId);
+        
+        if (m_destinationManager->removeDestination(destinationId)) {
+            QMessageBox::information(this, tr("Success"), tr("Destination removed successfully"));
+        }
     }
 }
 
@@ -361,3 +400,127 @@ QString DestinationTab::getSelectedDestinationId() const
 QPushButton* DestinationTab::getBtnBrowseDestination() { return ui->btnBrowseDestination; }
 QPushButton* DestinationTab::getBtnAddCloudDest() { return ui->btnAddCloudDest; }
 QPushButton* DestinationTab::getBtnRemoveDestination() { return ui->btnRemoveDestination; }
+
+// File monitor slot implementations
+void DestinationTab::onFileAdded(const QString &destinationId, const QString &filePath, const BackupFileInfo &info)
+{
+    qDebug() << "File added in destination" << destinationId << ":" << info.fileName;
+    // You can update UI or show notification here
+}
+
+void DestinationTab::onFileModified(const QString &destinationId, const QString &filePath, 
+                                    const BackupFileInfo &oldInfo, const BackupFileInfo &newInfo)
+{
+    qDebug() << "File modified in destination" << destinationId << ":" << newInfo.fileName
+             << "Old size:" << oldInfo.size << "New size:" << newInfo.size;
+    // You can update UI or show notification here
+}
+
+void DestinationTab::onFileDeleted(const QString &destinationId, const QString &filePath, const BackupFileInfo &info)
+{
+    qDebug() << "File deleted from destination" << destinationId << ":" << info.fileName;
+    // You can update UI or show notification here
+}
+
+void DestinationTab::onScanCompleted(const QString &destinationId, int filesFound, int changesDetected)
+{
+    qDebug() << "Scan completed for destination" << destinationId 
+             << "- Files:" << filesFound << "Changes:" << changesDetected;
+    updateMonitoringStatus();
+}
+
+void DestinationTab::onChangeDetected(const QString &destinationId, const FileChangeRecord &change)
+{
+    QString changeType;
+    switch (change.changeType) {
+        case FileChangeRecord::Added: changeType = "Added"; break;
+        case FileChangeRecord::Modified: changeType = "Modified"; break;
+        case FileChangeRecord::Deleted: changeType = "Deleted"; break;
+        case FileChangeRecord::Renamed: changeType = "Renamed"; break;
+        case FileChangeRecord::SizeChanged: changeType = "Size Changed"; break;
+    }
+    
+    qDebug() << "Change detected:" << changeType << "-" << change.description;
+}
+
+void DestinationTab::onMonitoringStateChanged(bool enabled)
+{
+    updateMonitoringStatus();
+}
+
+void DestinationTab::onViewChangeHistory()
+{
+    QString destinationId = getSelectedDestinationId();
+    if (destinationId.isEmpty()) {
+        QMessageBox::warning(this, tr("Warning"), 
+                           tr("Please select a destination to view change history"));
+        return;
+    }
+    
+    QList<FileChangeRecord> changes = m_backupFileMonitor->getChangeHistory(destinationId, 50);
+    
+    if (changes.isEmpty()) {
+        QMessageBox::information(this, tr("Change History"), 
+                               tr("No changes recorded for this destination."));
+        return;
+    }
+    
+    QString historyText = tr("Recent Changes (Last 50):\n\n");
+    for (const FileChangeRecord &change : changes) {
+        QString changeType;
+        switch (change.changeType) {
+            case FileChangeRecord::Added: changeType = "[+]"; break;
+            case FileChangeRecord::Modified: changeType = "[M]"; break;
+            case FileChangeRecord::Deleted: changeType = "[-]"; break;
+            case FileChangeRecord::Renamed: changeType = "[R]"; break;
+            case FileChangeRecord::SizeChanged: changeType = "[S]"; break;
+        }
+        
+        historyText += QString("%1 %2 - %3\n")
+            .arg(change.changeTime.toString("yyyy-MM-dd hh:mm:ss"))
+            .arg(changeType)
+            .arg(change.description);
+    }
+    
+    QMessageBox msgBox(this);
+    msgBox.setWindowTitle(tr("Change History"));
+    msgBox.setText(historyText);
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setTextInteractionFlags(Qt::TextSelectableByMouse);
+    msgBox.exec();
+}
+
+void DestinationTab::onToggleMonitoring(bool enabled)
+{
+    m_backupFileMonitor->setMonitoringEnabled(enabled);
+}
+
+void DestinationTab::updateMonitoringStatus()
+{
+    int totalFiles = m_backupFileMonitor->getTotalFilesMonitored();
+    qint64 totalSize = m_backupFileMonitor->getTotalSizeMonitored();
+    
+    QString statusText = tr("Monitoring: %1 | Files: %2 | Total Size: %3")
+        .arg(m_backupFileMonitor->isMonitoringEnabled() ? "Active" : "Inactive")
+        .arg(totalFiles)
+        .arg(formatBytes(totalSize));
+    
+    // Update status label if you have one in the UI
+    // ui->lblMonitoringStatus->setText(statusText);
+    
+    qDebug() << statusText;
+}
+
+QString DestinationTab::formatBytes(qint64 bytes) const
+{
+    const qint64 KB = 1024;
+    const qint64 MB = KB * 1024;
+    const qint64 GB = MB * 1024;
+    const qint64 TB = GB * 1024;
+    
+    if (bytes >= TB) return QString::number(bytes / (double)TB, 'f', 2) + " TB";
+    if (bytes >= GB) return QString::number(bytes / (double)GB, 'f', 2) + " GB";
+    if (bytes >= MB) return QString::number(bytes / (double)MB, 'f', 2) + " MB";
+    if (bytes >= KB) return QString::number(bytes / (double)KB, 'f', 2) + " KB";
+    return QString::number(bytes) + " bytes";
+}
