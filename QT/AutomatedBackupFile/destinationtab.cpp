@@ -60,6 +60,14 @@ void DestinationTab::setupConnections()
     connect(ui->spinRetentionDays, QOverload<int>::of(&QSpinBox::valueChanged), this, &DestinationTab::onRetentionDaysChanged);
     connect(ui->chkAutoCleanup, &QCheckBox::toggled, this, &DestinationTab::onAutoCleanupToggled);
     
+    // Connect new monitoring UI controls
+    connect(ui->chkEnableDestMonitoring, &QCheckBox::toggled,
+            this, &DestinationTab::onToggleMonitoring);
+    connect(ui->btnViewDestChanges, &QPushButton::clicked,
+            this, &DestinationTab::onViewChangeHistory);
+    connect(ui->btnScanDestination, &QPushButton::clicked,
+            this, [this]() { m_backupFileMonitor->scanAllDestinations(); });
+    
     // Manager connections
     connect(m_destinationManager, &DestinationManager::destinationAdded, this, &DestinationTab::onDestinationAdded);
     connect(m_destinationManager, &DestinationManager::destinationRemoved, this, &DestinationTab::onDestinationRemoved);
@@ -499,16 +507,40 @@ void DestinationTab::updateMonitoringStatus()
 {
     int totalFiles = m_backupFileMonitor->getTotalFilesMonitored();
     qint64 totalSize = m_backupFileMonitor->getTotalSizeMonitored();
+    int totalChanges = 0;
     
-    QString statusText = tr("Monitoring: %1 | Files: %2 | Total Size: %3")
-        .arg(m_backupFileMonitor->isMonitoringEnabled() ? "Active" : "Inactive")
+    // Count total changes from all destinations
+    QList<BackupDestination*> destinations = m_destinationManager->getAllDestinations();
+    for (BackupDestination *dest : destinations) {
+        QList<FileChangeRecord> changes = m_backupFileMonitor->getChangeHistory(dest->getId(), 10);
+        totalChanges += changes.size();
+    }
+    
+    QString statusText = QString("Monitoring: %1 | Backup Files: %2 | Size: %3 | Changes: %4")
+        .arg(m_backupFileMonitor->isMonitoringEnabled() ? 
+             "<span style='color: green;'><b>Active</b></span>" : 
+             "<span style='color: red;'><b>Inactive</b></span>")
         .arg(totalFiles)
-        .arg(formatBytes(totalSize));
+        .arg(formatBytes(totalSize))
+        .arg(totalChanges);
     
-    // Update status label if you have one in the UI
-    // ui->lblMonitoringStatus->setText(statusText);
+    ui->lblDestMonitoringStatus->setText(statusText);
     
-    qDebug() << statusText;
+    // Update background color based on status
+    if (m_backupFileMonitor->isMonitoringEnabled()) {
+        ui->lblDestMonitoringStatus->setStyleSheet(
+            "QLabel { padding: 5px; background-color: #d4edda; border: 1px solid #c3e6cb; "
+            "border-radius: 3px; color: #155724; }");
+    } else {
+        ui->lblDestMonitoringStatus->setStyleSheet(
+            "QLabel { padding: 5px; background-color: #f8d7da; border: 1px solid #f5c6cb; "
+            "border-radius: 3px; color: #721c24; }");
+    }
+    
+    // Sync checkbox state
+    ui->chkEnableDestMonitoring->setChecked(m_backupFileMonitor->isMonitoringEnabled());
+    
+    qDebug() << "Destination monitoring status updated:" << totalFiles << "files," << totalChanges << "changes";
 }
 
 QString DestinationTab::formatBytes(qint64 bytes) const
