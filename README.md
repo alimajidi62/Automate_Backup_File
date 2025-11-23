@@ -37,8 +37,13 @@ This project provides an intelligent backup system that automatically tracks fil
   - `BackupDestination` class: Represents local/network/cloud destinations
   - `DestinationManager`: Manages destinations, space monitoring, and retention policies
   - `RetentionPolicy` class: Configurable retention with daily/weekly/monthly backup preservation
+  - `BackupFileMonitor` class: Monitors backup files in destinations with change detection
+  - File system watcher integration for real-time change notifications
+  - Periodic scanning with configurable intervals
+  - Change history tracking (Added, Modified, Deleted, Renamed, Size Changed)
+  - File integrity verification and corrupted file detection
   - Space availability tracking and best-destination selection algorithm
-  - JSON-based persistence for destinations configuration
+  - JSON-based persistence for destinations configuration and monitoring state
 
 - **Cloud Integration Framework**:
   - `CloudProvider` base class with virtual interface
@@ -68,6 +73,11 @@ This project provides an intelligent backup system that automatically tracks fil
 - Encryption implementation (AES-256)
 - Schedule execution system
 - Progress reporting and logging
+
+### 🚫 Known Limitations
+- File checksums (MD5/SHA256) structure in place but not yet computed
+- Cloud destination file monitoring not yet supported (only local/network)
+- Change detection relies on modification dates (not content-based)
 
 ## Planned Features
 
@@ -167,10 +177,12 @@ Automate_Backup_File/
 │   ├── backupdestination.cpp/h     # Destination data model
 │   ├── retentionpolicy.cpp/h       # Retention policy configuration
 │   ├── cloudprovider.cpp/h         # Cloud provider interface & implementations
+│   ├── backupfilemonitor.cpp/h     # File monitoring for destinations (NEW!)
 │   │
 │   ├── Resources
 │   ├── resources.qrc               # Qt resource file
 │   ├── styles.qss                  # Custom stylesheet
+│   ├── BACKUPFILEMONITOR_USAGE.md  # File monitor documentation (NEW!)
 │   │
 │   ├── Build System
 │   ├── CMakeLists.txt              # Build configuration
@@ -275,6 +287,13 @@ The application features a tabbed interface with the following sections:
    - Monitor available space per destination
    - Support for multiple cloud providers
    - Auto-cleanup based on retention rules
+   - **File monitoring with change detection** (NEW!)
+   - Real-time tracking of backup files
+   - Change history with timestamps
+   - Detect added, modified, deleted, renamed files
+   - File integrity verification
+   - Configurable scan intervals
+   - Automatic state persistence
 
 5. **Settings Tab** (UI Ready):
    - Configure compression settings
@@ -298,6 +317,16 @@ The application features a tabbed interface with the following sections:
 - Intelligent destination selection based on available space
 - Retention policy enforcement
 - Cloud provider factory pattern for extensibility
+- **Real-time file monitoring** (NEW!)
+  - QFileSystemWatcher integration for immediate change detection
+  - Periodic scanning with configurable intervals (default: 30 minutes)
+  - Comprehensive change tracking (Added, Modified, Deleted, Renamed, Size Changed)
+  - Change history per destination (up to 1000 records)
+  - File metadata tracking (size, modification date, checksum structure)
+  - File integrity verification
+  - Corrupted file detection
+  - JSON persistence for monitoring state
+  - Statistics: file count, total size, last scan time per destination
 
 #### Cloud Provider Framework
 - Abstract CloudProvider base class
@@ -336,6 +365,12 @@ The application features a tabbed interface with the following sections:
 - [x] Retention policy configuration
 - [x] Space monitoring per destination
 - [x] JSON persistence for destinations
+- [x] BackupFileMonitor class for destination file tracking
+- [x] Real-time change detection in destinations
+- [x] Change history with timestamps
+- [x] File integrity verification
+- [x] Periodic scanning with configurable intervals
+- [x] Monitoring state persistence
 
 ### Phase 3: Core Backup Functionality (In Progress)
 - [x] File system monitoring framework
@@ -495,6 +530,11 @@ Clean data models with business logic:
 11. **Cloud Framework**: Extensible cloud provider architecture
 12. **Professional UI**: Custom styled interface with QSS
 13. **Cross-platform Build**: CMake configuration for Windows/Linux/macOS
+14. **Destination File Monitoring**: Real-time tracking of backup files in destinations
+15. **Change Detection**: Track file additions, modifications, deletions, renames
+16. **Change History**: Maintain detailed history with timestamps
+17. **File Integrity**: Verify file integrity and detect corrupted files
+18. **Monitoring State Persistence**: Save/load monitoring state across sessions
 
 ### 🔨 Next to Implement
 1. Cloud provider OAuth implementation
