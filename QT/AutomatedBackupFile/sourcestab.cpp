@@ -80,6 +80,12 @@ void SourcesTab::setupConnections()
             this, [this](int minutes) { 
                 m_sourceFileMonitor->setScanInterval(minutes);
             });
+    
+    // Connect new UI buttons
+    connect(ui->btnViewSourceChanges, &QPushButton::clicked, 
+            this, &SourcesTab::onViewSourceChangeHistory);
+    connect(ui->btnRefreshSourceScan, &QPushButton::clicked,
+            this, [this]() { m_sourceFileMonitor->scanAllDestinations(); });
 }
 
 void SourcesTab::setupSourceFileMonitorConnections()
@@ -371,10 +377,20 @@ void SourcesTab::refreshSourceTable()
         }
         ui->tableSourceList->setItem(row, 3, statusItem);
         
+        // Files count
+        QString fileCount = source->getFileCount() > 0 ? 
+            QString::number(source->getFileCount()) : "-";
+        ui->tableSourceList->setItem(row, 4, new QTableWidgetItem(fileCount));
+        
+        // Size
+        QString sizeStr = source->getTotalSize() > 0 ?
+            formatBytes(source->getTotalSize()) : "-";
+        ui->tableSourceList->setItem(row, 5, new QTableWidgetItem(sizeStr));
+        
         // Last Checked
         QString lastChecked = source->getLastChecked().isValid() ?
             source->getLastChecked().toString("yyyy-MM-dd hh:mm:ss") : "Never";
-        ui->tableSourceList->setItem(row, 4, new QTableWidgetItem(lastChecked));
+        ui->tableSourceList->setItem(row, 6, new QTableWidgetItem(lastChecked));
     }
     
     // Resize columns to content
@@ -420,22 +436,41 @@ QPushButton* SourcesTab::getBtnTestConnection() { return ui->btnTestConnection; 
 // Source file monitor slot implementations
 void SourcesTab::onSourceFileAdded(const QString &sourceId, const QString &filePath, const BackupFileInfo &info)
 {
-    qDebug() << "File added in source" << sourceId << ":" << info.fileName << "(" << formatBytes(info.size) << ")";
+    BackupSource *source = m_sourceManager->getSource(sourceId);
+    QString sourceName = source ? source->getPath() : sourceId;
+    
+    qDebug() << "✓ NEW FILE in source" << sourceName << ":" << info.fileName << "(" << formatBytes(info.size) << ")";
     updateSourceMonitoringStatus();
+    refreshSourceTable();
 }
 
 void SourcesTab::onSourceFileModified(const QString &sourceId, const QString &filePath, 
                                       const BackupFileInfo &oldInfo, const BackupFileInfo &newInfo)
 {
-    qDebug() << "File modified in source" << sourceId << ":" << newInfo.fileName
-             << "- Size:" << formatBytes(oldInfo.size) << "->" << formatBytes(newInfo.size);
+    BackupSource *source = m_sourceManager->getSource(sourceId);
+    QString sourceName = source ? source->getPath() : sourceId;
+    
+    qDebug() << "⚠ MODIFIED FILE in source" << sourceName << ":" << newInfo.fileName
+             << "- Size:" << formatBytes(oldInfo.size) << "→" << formatBytes(newInfo.size);
+    
+    // Mark source as needing backup by changing its status
+    if (source) {
+        // You could add a custom flag here or emit a signal to the main window
+        qDebug() << ">>> SOURCE NEEDS BACKUP:" << sourceName;
+    }
+    
     updateSourceMonitoringStatus();
+    refreshSourceTable();
 }
 
 void SourcesTab::onSourceFileDeleted(const QString &sourceId, const QString &filePath, const BackupFileInfo &info)
 {
-    qDebug() << "File deleted from source" << sourceId << ":" << info.fileName;
+    BackupSource *source = m_sourceManager->getSource(sourceId);
+    QString sourceName = source ? source->getPath() : sourceId;
+    
+    qDebug() << "✗ DELETED FILE from source" << sourceName << ":" << info.fileName;
     updateSourceMonitoringStatus();
+    refreshSourceTable();
 }
 
 void SourcesTab::onSourceScanCompleted(const QString &sourceId, int filesFound, int changesDetected)
@@ -458,15 +493,37 @@ void SourcesTab::onSourceScanCompleted(const QString &sourceId, int filesFound, 
 void SourcesTab::onSourceChangeDetected(const QString &sourceId, const FileChangeRecord &change)
 {
     QString changeType;
+    QString icon;
     switch (change.changeType) {
-        case FileChangeRecord::Added: changeType = "Added"; break;
-        case FileChangeRecord::Modified: changeType = "Modified"; break;
-        case FileChangeRecord::Deleted: changeType = "Deleted"; break;
-        case FileChangeRecord::Renamed: changeType = "Renamed"; break;
-        case FileChangeRecord::SizeChanged: changeType = "Size Changed"; break;
+        case FileChangeRecord::Added: 
+            changeType = "Added"; 
+            icon = "✓";
+            break;
+        case FileChangeRecord::Modified: 
+            changeType = "Modified"; 
+            icon = "⚠";
+            break;
+        case FileChangeRecord::Deleted: 
+            changeType = "Deleted"; 
+            icon = "✗";
+            break;
+        case FileChangeRecord::Renamed: 
+            changeType = "Renamed"; 
+            icon = "↻";
+            break;
+        case FileChangeRecord::SizeChanged: 
+            changeType = "Size Changed"; 
+            icon = "↕";
+            break;
     }
     
-    qDebug() << "Source change detected in" << sourceId << ":" << changeType << "-" << change.description;
+    BackupSource *source = m_sourceManager->getSource(sourceId);
+    QString sourceName = source ? source->getPath() : sourceId;
+    
+    qDebug() << icon << "Source change detected in" << sourceName << ":" << changeType << "-" << change.description;
+    
+    // Show notification in status bar if available
+    // statusBar()->showMessage(QString("%1 %2 in %3").arg(icon, changeType, sourceName), 5000);
 }
 
 void SourcesTab::onSourceMonitoringStateChanged(bool enabled)
@@ -535,14 +592,35 @@ void SourcesTab::updateSourceMonitoringStatus()
 {
     int totalFiles = m_sourceFileMonitor->getTotalFilesMonitored();
     qint64 totalSize = m_sourceFileMonitor->getTotalSizeMonitored();
+    int totalChanges = 0;
     
-    QString statusText = tr("Source Monitoring: %1 | Total Files: %2 | Total Size: %3")
-        .arg(m_sourceFileMonitor->isMonitoringEnabled() ? "Active" : "Inactive")
+    // Count total changes from all sources
+    QList<BackupSource*> sources = m_sourceManager->getAllSources();
+    for (BackupSource *source : sources) {
+        QList<FileChangeRecord> changes = m_sourceFileMonitor->getChangeHistory(source->getId(), 10);
+        totalChanges += changes.size();
+    }
+    
+    QString statusText = QString("Monitoring: %1 | Files: %2 | Size: %3 | Changes: %4")
+        .arg(m_sourceFileMonitor->isMonitoringEnabled() ? 
+             "<span style='color: green;'><b>Active</b></span>" : 
+             "<span style='color: red;'><b>Inactive</b></span>")
         .arg(totalFiles)
-        .arg(formatBytes(totalSize));
+        .arg(formatBytes(totalSize))
+        .arg(totalChanges);
     
-    // Update status label if you have one in the UI
-    // ui->lblSourceMonitoringStatus->setText(statusText);
+    ui->lblMonitoringStatus->setText(statusText);
     
-    qDebug() << statusText;
+    // Update background color based on status
+    if (m_sourceFileMonitor->isMonitoringEnabled()) {
+        ui->lblMonitoringStatus->setStyleSheet(
+            "QLabel { padding: 5px; background-color: #d4edda; border: 1px solid #c3e6cb; "
+            "border-radius: 3px; color: #155724; }");
+    } else {
+        ui->lblMonitoringStatus->setStyleSheet(
+            "QLabel { padding: 5px; background-color: #f8d7da; border: 1px solid #f5c6cb; "
+            "border-radius: 3px; color: #721c24; }");
+    }
+    
+    qDebug() << "Source monitoring status updated:" << totalFiles << "files," << totalChanges << "changes";
 }
