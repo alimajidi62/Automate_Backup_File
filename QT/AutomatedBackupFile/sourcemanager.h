@@ -5,6 +5,7 @@
 #include <QList>
 #include <QString>
 #include <QFileSystemWatcher>
+#include <QTimer>
 #include "backupsource.h"
 
 class SourceManager : public QObject
