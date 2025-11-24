@@ -1,0 +1,44 @@
+<UserControl x:Class="AutomatedBackupFile.Views.ScheduleTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="950">
+    <Grid Margin="10">
+        <StackPanel>
+            <GroupBox Header="Backup Schedules" Margin="0,0,0,10">
+                <StackPanel>
+                    <CheckBox Content="Enable Automatic Backups" Margin="0,0,0,10"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <Button Content="Add Schedule" Margin="0,0,5,0"/>
+                        <Button Content="Edit" Margin="0,0,5,0"/>
+                        <Button Content="Remove"/>
+                    </StackPanel>
+                    <DataGrid AutoGenerateColumns="False" Height="120">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Schedule Name"/>
+                            <DataGridTextColumn Header="Frequency"/>
+                            <DataGridTextColumn Header="Time"/>
+                            <DataGridTextColumn Header="Next Run"/>
+                            <DataGridTextColumn Header="Enabled"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Quick Schedule">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Frequency:" VerticalAlignment="Center"/>
+                    <ComboBox Width="100" Margin="5,0,10,0">
+                        <ComboBoxItem Content="Daily"/>
+                        <ComboBoxItem Content="Weekly"/>
+                        <ComboBoxItem Content="Monthly"/>
+                        <ComboBoxItem Content="Custom"/>
+                    </ComboBox>
+                    <Label Content="Time:" VerticalAlignment="Center"/>
+                    <TextBox Width="60" Margin="5,0,0,0"/>
+                </StackPanel>
+            </GroupBox>
+        </StackPanel>
+    </Grid>
+</UserControl>

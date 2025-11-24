@@ -1,0 +1,56 @@
+<UserControl x:Class="AutomatedBackupFile.Views.SettingsTab"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="950">
+    <Grid Margin="10">
+        <StackPanel>
+            <GroupBox Header="Compression Settings" Margin="0,0,0,10">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Compression Level:" VerticalAlignment="Center"/>
+                    <ComboBox Width="100" Margin="5,0,10,0">
+                        <ComboBoxItem Content="None"/>
+                        <ComboBoxItem Content="Fast"/>
+                        <ComboBoxItem Content="Normal"/>
+                        <ComboBoxItem Content="Maximum"/>
+                    </ComboBox>
+                    <Label Content="Compression Format:" VerticalAlignment="Center"/>
+                    <ComboBox Width="100" Margin="5,0,0,0">
+                        <ComboBoxItem Content="ZIP"/>
+                        <ComboBoxItem Content="7Z"/>
+                        <ComboBoxItem Content="TAR.GZ"/>
+                    </ComboBox>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Encryption Settings" Margin="0,0,0,10">
+                <StackPanel>
+                    <CheckBox Content="Enable Encryption" Margin="0,0,0,10"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <Label Content="Encryption Algorithm:" VerticalAlignment="Center"/>
+                        <ComboBox Width="100" Margin="5,0,10,0">
+                            <ComboBoxItem Content="AES-256"/>
+                            <ComboBoxItem Content="AES-128"/>
+                        </ComboBox>
+                        <Label Content="Encryption Password:" VerticalAlignment="Center"/>
+                        <PasswordBox Width="100" Margin="5,0,10,0"/>
+                        <Label Content="Confirm Password:" VerticalAlignment="Center"/>
+                        <PasswordBox Width="100" Margin="5,0,10,0"/>
+                        <Button Content="Test Encryption"/>
+                    </StackPanel>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Notification Settings" Margin="0,0,0,10">
+                <StackPanel Orientation="Horizontal">
+                    <CheckBox Content="Notify on successful backup" Margin="0,0,10,0"/>
+                    <CheckBox Content="Notify on backup failure" Margin="0,0,10,0"/>
+                    <CheckBox Content="Enable email notifications"/>
+                </StackPanel>
+            </GroupBox>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Save Settings" Width="120"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

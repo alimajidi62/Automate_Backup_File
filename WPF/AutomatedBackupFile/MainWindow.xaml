@@ -4,9 +4,26 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AutomatedBackupFile"
+        xmlns:views="clr-namespace:AutomatedBackupFile.Views"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-
+        <TabControl>
+            <TabItem Header="Sources">
+                <views:SourcesTab />
+            </TabItem>
+            <TabItem Header="Schedule">
+                <views:ScheduleTab />
+            </TabItem>
+            <TabItem Header="Tasks">
+                <views:TasksTab />
+            </TabItem>
+            <TabItem Header="Destinations">
+                <views:DestinationTab />
+            </TabItem>
+            <TabItem Header="Settings">
+                <views:SettingsTab />
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>
