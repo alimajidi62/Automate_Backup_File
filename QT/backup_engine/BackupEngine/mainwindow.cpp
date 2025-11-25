@@ -57,7 +57,10 @@ void MainWindow::on_StartBackup_clicked()
         QMessageBox::warning(this, "Path Mismatch", "Number of source and destination paths must match.");
         return;
     }
-    
+    sourceList[0]="C:\\BackUp\\source1\\";
+    sourceList.append("C:\\BackUp\\source2\\");
+    destList[0]="C:\\BackUp\\D1\\";
+    destList.append("C:\\BackUp\\D2\\");
     std::vector<std::pair<QString, QString>> pairs;
     for (int i = 0; i < sourceList.size(); ++i) {
         pairs.push_back({sourceList[i].trimmed(), destList[i].trimmed()});
