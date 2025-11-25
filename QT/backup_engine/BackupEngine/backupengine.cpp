@@ -152,7 +152,7 @@ BackupEngine::~BackupEngine()
     stopBackup();
 }
 
-void BackupEngine::startBackup(const QString& source, const QString& destination)
+void BackupEngine::startBackup(const std::vector<std::pair<QString, QString>>& sourceDestPairs)
 {
     if (m_thread && m_thread->isRunning()) {
         qWarning() << "Backup already running";
@@ -160,7 +160,7 @@ void BackupEngine::startBackup(const QString& source, const QString& destination
     }
 
     m_thread = new QThread(this);
-    m_worker = new BackupWorker(source, destination);
+    m_worker = new BackupWorker(sourceDestPairs);
     m_worker->moveToThread(m_thread);
 
     connect(m_thread, &QThread::started, m_worker, &BackupWorker::startBackup);

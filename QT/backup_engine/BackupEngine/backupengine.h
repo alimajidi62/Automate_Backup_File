@@ -9,6 +9,8 @@
 #include <QFileInfo>
 #include <QDirIterator>
 #include <atomic>
+#include <vector>
+#include <utility>
 
 enum class BackupStatus {
     Idle,
@@ -23,7 +25,7 @@ class BackupWorker : public QObject
     Q_OBJECT
 
 public:
-    explicit BackupWorker(const QString& source, const QString& destination, QObject *parent = nullptr);
+    explicit BackupWorker(const std::vector<std::pair<QString, QString>>& sourceDestPairs, QObject *parent = nullptr);
     
     void stop();
     BackupStatus getStatus() const { return m_status; }
@@ -43,8 +45,7 @@ signals:
     void backupFailed(const QString& error);
 
 private:
-    QString m_sourcePath;
-    QString m_destinationPath;
+    std::vector<std::pair<QString, QString>> m_sourceDestPairs;
     std::atomic<BackupStatus> m_status;
     std::atomic<int> m_progress;
     std::atomic<qint64> m_totalFiles;
@@ -65,7 +66,7 @@ public:
     explicit BackupEngine(QObject *parent = nullptr);
     ~BackupEngine();
 
-    void startBackup(const QString& source, const QString& destination);
+    void startBackup(const std::vector<std::pair<QString, QString>>& sourceDestPairs);
     void stopBackup();
     
     BackupStatus getStatus() const;
