@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "backupengine.h"
+#include "filedecryptor.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -21,6 +22,7 @@ public:
 private slots:
     void on_StartBackup_clicked();
     void on_StopBackup_clicked();
+    void on_DecryptBackup_clicked();
 
 private:
     Ui::MainWindow *ui;

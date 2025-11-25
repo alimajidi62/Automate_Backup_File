@@ -82,3 +82,49 @@ void MainWindow::on_StopBackup_clicked()
     //ui->stopButton->setEnabled(false);
 }
 
+void MainWindow::on_DecryptBackup_clicked()
+{
+    QString backupPath = ui->destinationLineEdit->text();
+    
+    if (backupPath.isEmpty()) {
+        QMessageBox::warning(this, "Missing Information", "Please enter backup destination path to decrypt.");
+        return;
+    }
+    
+    // Parse multiple backup paths (separated by semicolons)
+    QStringList backupList = backupPath.split(';', Qt::SkipEmptyParts);
+    
+    QString keyFilePath = QCoreApplication::applicationDirPath() + "/key.txt";
+    FileDecryptor decryptor;
+    
+    if (!decryptor.loadPasswordFromFile(keyFilePath)) {
+        QMessageBox::critical(this, "Decryption Failed", "Failed to load password from key.txt");
+        return;
+    }
+    
+    ui->statusLabel->setText("Decrypting backup files...");
+    
+    bool allSuccess = true;
+    for (const QString& backup : backupList) {
+        QString encryptedDir = backup.trimmed() + "/encrypted";
+        
+        if (!QDir(encryptedDir).exists()) {
+            QMessageBox::warning(this, "Directory Not Found", "Encrypted directory not found: " + encryptedDir);
+            allSuccess = false;
+            continue;
+        }
+        
+        if (!decryptor.decryptDirectory(encryptedDir)) {
+            QMessageBox::critical(this, "Decryption Failed", "Failed to decrypt: " + encryptedDir);
+            allSuccess = false;
+        }
+    }
+    
+    if (allSuccess) {
+        ui->statusLabel->setText("Decryption completed successfully!");
+        QMessageBox::information(this, "Decryption Complete", "All files decrypted successfully to 'decrypted' folder in each backup directory.");
+    } else {
+        ui->statusLabel->setText("Decryption completed with errors");
+    }
+}
+

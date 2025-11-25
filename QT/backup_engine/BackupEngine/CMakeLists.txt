@@ -19,6 +19,10 @@ set(PROJECT_SOURCES
         mainwindow.ui
         backupengine.cpp
         backupengine.h
+        fileencryptor.cpp
+        fileencryptor.h
+        filedecryptor.cpp
+        filedecryptor.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
