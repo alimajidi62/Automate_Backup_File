@@ -16,3 +16,5 @@ TasksTab::~TasksTab()
 QPushButton* TasksTab::getBtnStartBackup() { return ui->btnStartBackup; }
 QPushButton* TasksTab::getBtnStopBackup() { return ui->btnStopBackup; }
 QPushButton* TasksTab::getBtnViewHistory() { return ui->btnViewHistory; }
+QProgressBar* TasksTab::getProgressBar() { return ui->progressBackup; }
+QLabel* TasksTab::getStatusLabel() { return ui->lblBackupStatus; }

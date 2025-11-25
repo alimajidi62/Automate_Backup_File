@@ -3,6 +3,8 @@
 
 #include <QWidget>
 #include <QPushButton>
+#include <QProgressBar>
+#include <QLabel>
 
 namespace Ui {
 class TasksTab;
@@ -20,6 +22,8 @@ public:
     QPushButton* getBtnStartBackup();
     QPushButton* getBtnStopBackup();
     QPushButton* getBtnViewHistory();
+    QProgressBar* getProgressBar();
+    QLabel* getStatusLabel();
 
 private:
     Ui::TasksTab *ui;

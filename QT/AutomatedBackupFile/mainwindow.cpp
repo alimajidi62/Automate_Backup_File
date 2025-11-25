@@ -13,12 +13,17 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , m_sourceManager(nullptr)
+    , m_destinationManager(nullptr)
 {
     ui->setupUi(this);
     
-    // Initialize managers
-    m_sourceManager = new SourceManager(this);
-    m_destinationManager = new DestinationManager(this);
+    // Initialize UI first (creates tab widgets with their managers)
+    initializeUI();
+    
+    // Get managers from tabs
+    m_sourceManager = sourcesTab->getSourceManager();
+    m_destinationManager = destinationTab->getDestinationManager();
     
     // Initialize backup engine
     m_backupEngine = new BackupEngine(this);
@@ -27,17 +32,24 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_backupEngine, &BackupEngine::progressUpdated, this, &MainWindow::updateBackupProgress);
     connect(m_backupEngine, &BackupEngine::fileProcessed, this, [this](const QString& filename) {
         statusBar()->showMessage("Processing: " + filename);
+        tasksTab->getStatusLabel()->setText("Status: Processing " + filename);
     });
     connect(m_backupEngine, &BackupEngine::backupCompleted, this, [this]() {
         statusBar()->showMessage("Backup completed successfully!");
+        tasksTab->getStatusLabel()->setText("Status: Backup completed successfully!");
+        tasksTab->getProgressBar()->setValue(100);
         QMessageBox::information(this, "Backup Complete", "Backup completed successfully!");
+        tasksTab->getBtnStartBackup()->setEnabled(true);
+        tasksTab->getBtnStopBackup()->setEnabled(false);
     });
     connect(m_backupEngine, &BackupEngine::backupFailed, this, [this](const QString& error) {
         statusBar()->showMessage("Backup failed: " + error);
+        tasksTab->getStatusLabel()->setText("Status: Backup failed - " + error);
         QMessageBox::critical(this, "Backup Failed", error);
+        tasksTab->getBtnStartBackup()->setEnabled(true);
+        tasksTab->getBtnStopBackup()->setEnabled(false);
     });
     
-    initializeUI();
     setupConnections();
 }
 
@@ -198,7 +210,14 @@ void MainWindow::onStartBackup()
         return;
     }
     
+    // Update UI
+    tasksTab->getBtnStartBackup()->setEnabled(false);
+    tasksTab->getBtnStopBackup()->setEnabled(true);
+    tasksTab->getProgressBar()->setValue(0);
+    tasksTab->getStatusLabel()->setText("Status: Starting backup...");
     statusBar()->showMessage("Starting backup...");
+    
+    // Start backup
     m_backupEngine->startBackup(pairs);
 }
 
@@ -206,6 +225,8 @@ void MainWindow::onStopBackup()
 {
     m_backupEngine->stopBackup();
     statusBar()->showMessage("Backup stopped by user");
+    tasksTab->getBtnStartBackup()->setEnabled(true);
+    tasksTab->getBtnStopBackup()->setEnabled(false);
 }
 
 void MainWindow::onViewBackupHistory()
@@ -216,6 +237,8 @@ void MainWindow::onViewBackupHistory()
 void MainWindow::updateBackupProgress(int progress)
 {
     statusBar()->showMessage(QString("Backup Progress: %1%").arg(progress));
+    tasksTab->getProgressBar()->setValue(progress);
+    tasksTab->getStatusLabel()->setText(QString("Status: Backing up... %1%").arg(progress));
 }
 
 // Settings Slots
