@@ -68,8 +68,8 @@ void MainWindow::on_StartBackup_clicked()
     
     ui->statusLabel->setText("Starting backup...");
     ui->progressBar->setValue(0);
-    ui->startButton->setEnabled(false);
-    ui->stopButton->setEnabled(true);
+   // ui->startButton->setEnabled(false);
+    //ui->stopButton->setEnabled(true);
     
     m_backupEngine->startBackup(pairs);
 }
@@ -78,7 +78,7 @@ void MainWindow::on_StopBackup_clicked()
 {
     m_backupEngine->stopBackup();
     ui->statusLabel->setText("Backup stopped by user");
-    ui->startButton->setEnabled(true);
-    ui->stopButton->setEnabled(false);
+    //ui->startButton->setEnabled(true);
+    //ui->stopButton->setEnabled(false);
 }
 
