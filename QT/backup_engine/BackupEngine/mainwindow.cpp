@@ -41,12 +41,26 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_StartBackup_clicked()
 {
-    QString source_address = ui->sourceLineEdit->text();
-    QString destination_address = ui->destinationLineEdit->text();
+    QString sources = ui->sourceLineEdit->text();
+    QString destinations = ui->destinationLineEdit->text();
     
-    if (source_address.isEmpty() || destination_address.isEmpty()) {
+    if (sources.isEmpty() || destinations.isEmpty()) {
         QMessageBox::warning(this, "Missing Information", "Please enter both source and destination paths.");
         return;
+    }
+    
+    // Parse sources and destinations (separated by semicolons)
+    QStringList sourceList = sources.split(';', Qt::SkipEmptyParts);
+    QStringList destList = destinations.split(';', Qt::SkipEmptyParts);
+    
+    if (sourceList.size() != destList.size()) {
+        QMessageBox::warning(this, "Path Mismatch", "Number of source and destination paths must match.");
+        return;
+    }
+    
+    std::vector<std::pair<QString, QString>> pairs;
+    for (int i = 0; i < sourceList.size(); ++i) {
+        pairs.push_back({sourceList[i].trimmed(), destList[i].trimmed()});
     }
     
     ui->statusLabel->setText("Starting backup...");
@@ -54,7 +68,7 @@ void MainWindow::on_StartBackup_clicked()
     ui->startButton->setEnabled(false);
     ui->stopButton->setEnabled(true);
     
-    m_backupEngine->startBackup(source_address, destination_address);
+    m_backupEngine->startBackup(pairs);
 }
 
 void MainWindow::on_StopBackup_clicked()

@@ -18,7 +18,7 @@
     <item>
      <widget class="QLabel" name="label">
       <property name="text">
-       <string>Source Path:</string>
+       <string>Source Paths (separate with ;):</string>
       </property>
      </widget>
     </item>
@@ -28,14 +28,14 @@
        <string>C:\\source of backup\\</string>
       </property>
       <property name="placeholderText">
-       <string>Enter source directory path (e.g., C:\source)</string>
+       <string>C:\source1; C:\source2</string>
       </property>
      </widget>
     </item>
     <item>
      <widget class="QLabel" name="label_2">
       <property name="text">
-       <string>Destination Path:</string>
+       <string>Destination Paths (separate with ;):</string>
       </property>
      </widget>
     </item>
@@ -45,7 +45,7 @@
        <string>C:\\backup\\</string>
       </property>
       <property name="placeholderText">
-       <string>Enter destination directory path (e.g., C:\backup)</string>
+       <string>C:\backup1; C:\backup2</string>
       </property>
      </widget>
     </item>
