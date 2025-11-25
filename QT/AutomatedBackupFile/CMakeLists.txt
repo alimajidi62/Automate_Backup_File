@@ -50,6 +50,12 @@ set(PROJECT_SOURCES
         networkcredentialsdialog.h
         backupfilemonitor.cpp
         backupfilemonitor.h
+        backupengine.cpp
+        backupengine.h
+        fileencryptor.cpp
+        fileencryptor.h
+        filedecryptor.cpp
+        filedecryptor.h
         resources.qrc
         styles.qss
 )

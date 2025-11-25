@@ -8,12 +8,35 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QCoreApplication>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    
+    // Initialize managers
+    m_sourceManager = new SourceManager(this);
+    m_destinationManager = new DestinationManager(this);
+    
+    // Initialize backup engine
+    m_backupEngine = new BackupEngine(this);
+    
+    // Connect backup engine signals
+    connect(m_backupEngine, &BackupEngine::progressUpdated, this, &MainWindow::updateBackupProgress);
+    connect(m_backupEngine, &BackupEngine::fileProcessed, this, [this](const QString& filename) {
+        statusBar()->showMessage("Processing: " + filename);
+    });
+    connect(m_backupEngine, &BackupEngine::backupCompleted, this, [this]() {
+        statusBar()->showMessage("Backup completed successfully!");
+        QMessageBox::information(this, "Backup Complete", "Backup completed successfully!");
+    });
+    connect(m_backupEngine, &BackupEngine::backupFailed, this, [this](const QString& error) {
+        statusBar()->showMessage("Backup failed: " + error);
+        QMessageBox::critical(this, "Backup Failed", error);
+    });
+    
     initializeUI();
     setupConnections();
 }
@@ -140,17 +163,59 @@ void MainWindow::onEnableSchedule(bool enabled)
 // Backup Operations Slots
 void MainWindow::onStartBackup()
 {
-    statusBar()->showMessage("Start Backup - Not yet implemented");
+    // Get enabled sources and destinations
+    QList<BackupSource*> sources = m_sourceManager->getEnabledSources();
+    QList<BackupDestination*> destinations = m_destinationManager->getAllDestinations();
+    
+    if (sources.isEmpty()) {
+        QMessageBox::warning(this, "No Sources", "Please add at least one backup source in the 'Backup Sources' tab.");
+        return;
+    }
+    
+    if (destinations.isEmpty()) {
+        QMessageBox::warning(this, "No Destinations", "Please add at least one destination in the 'Destination' tab.");
+        return;
+    }
+    
+    // Build source-destination pairs
+    std::vector<std::pair<QString, QString>> pairs;
+    
+    for (BackupSource* source : sources) {
+        if (!source->isEnabled()) continue;
+        
+        for (BackupDestination* dest : destinations) {
+            if (dest->getStatus() != DestinationStatus::Available) continue;
+            
+            QString sourcePath = source->getPath();
+            QString destPath = dest->getPath() + "/" + source->getId();
+            
+            pairs.push_back({sourcePath, destPath});
+        }
+    }
+    
+    if (pairs.empty()) {
+        QMessageBox::warning(this, "No Valid Pairs", "No valid source-destination pairs found. Check source and destination status.");
+        return;
+    }
+    
+    statusBar()->showMessage("Starting backup...");
+    m_backupEngine->startBackup(pairs);
 }
 
 void MainWindow::onStopBackup()
 {
-    statusBar()->showMessage("Stop Backup - Not yet implemented");
+    m_backupEngine->stopBackup();
+    statusBar()->showMessage("Backup stopped by user");
 }
 
 void MainWindow::onViewBackupHistory()
 {
     statusBar()->showMessage("View Backup History - Not yet implemented");
+}
+
+void MainWindow::updateBackupProgress(int progress)
+{
+    statusBar()->showMessage(QString("Backup Progress: %1%").arg(progress));
 }
 
 // Settings Slots
@@ -161,6 +226,24 @@ void MainWindow::onSaveSettings()
 
 void MainWindow::onTestEncryption()
 {
-    statusBar()->showMessage("Test Encryption - Not yet implemented");
+    QString keyFilePath = QCoreApplication::applicationDirPath() + "/key.txt";
+    
+    if (!QFile::exists(keyFilePath)) {
+        QMessageBox::warning(this, "Key File Missing", 
+            "Encryption key file not found at: " + keyFilePath + 
+            "\n\nPlease create a key.txt file with your encryption password.");
+        return;
+    }
+    
+    FileEncryptor encryptor;
+    if (encryptor.loadPasswordFromFile(keyFilePath)) {
+        QMessageBox::information(this, "Encryption Test", 
+            "Encryption key loaded successfully from key.txt\n\nEncryption is ready to use.");
+        statusBar()->showMessage("Encryption test passed");
+    } else {
+        QMessageBox::critical(this, "Encryption Test Failed", 
+            "Failed to load encryption key from key.txt");
+        statusBar()->showMessage("Encryption test failed");
+    }
 }
 

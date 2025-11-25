@@ -2,6 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "backupengine.h"
+#include "filedecryptor.h"
+#include "sourcemanager.h"
+#include "destinationmanager.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -61,7 +65,13 @@ private:
     DestinationTab *destinationTab;
     SettingsTab *settingsTab;
     
+    // Backup engine and managers
+    BackupEngine *m_backupEngine;
+    SourceManager *m_sourceManager;
+    DestinationManager *m_destinationManager;
+    
     void setupConnections();
     void initializeUI();
+    void updateBackupProgress(int progress);
 };
 #endif // MAINWINDOW_H

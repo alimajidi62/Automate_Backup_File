@@ -5,6 +5,7 @@
 #include <QPushButton>
 #include "destinationmanager.h"
 #include "backupfilemonitor.h"
+#include "filedecryptor.h"
 
 namespace Ui {
 class DestinationTab;
@@ -54,6 +55,7 @@ private slots:
     void onMonitoringStateChanged(bool enabled);
     void onViewChangeHistory();
     void onToggleMonitoring(bool enabled);
+    void onDecryptBackup();
 
 private:
     Ui::DestinationTab *ui;

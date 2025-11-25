@@ -7,6 +7,7 @@
 #include <QInputDialog>
 #include <QTableWidgetItem>
 #include <QDebug>
+#include <QCoreApplication>
 
 DestinationTab::DestinationTab(QWidget *parent)
     : QWidget(parent)
@@ -67,6 +68,8 @@ void DestinationTab::setupConnections()
             this, &DestinationTab::onViewChangeHistory);
     connect(ui->btnScanDestination, &QPushButton::clicked,
             this, [this]() { m_backupFileMonitor->scanAllDestinations(); });
+    connect(ui->btnDecryptBackup, &QPushButton::clicked,
+            this, &DestinationTab::onDecryptBackup);
     
     // Manager connections
     connect(m_destinationManager, &DestinationManager::destinationAdded, this, &DestinationTab::onDestinationAdded);
@@ -556,3 +559,61 @@ QString DestinationTab::formatBytes(qint64 bytes) const
     if (bytes >= KB) return QString::number(bytes / (double)KB, 'f', 2) + " KB";
     return QString::number(bytes) + " bytes";
 }
+
+void DestinationTab::onDecryptBackup()
+{
+    QString destinationId = getSelectedDestinationId();
+    
+    if (destinationId.isEmpty()) {
+        QMessageBox::warning(this, "No Selection", "Please select a destination to decrypt.");
+        return;
+    }
+    
+    BackupDestination* dest = m_destinationManager->getDestination(destinationId);
+    if (!dest) {
+        QMessageBox::warning(this, "Invalid Destination", "Selected destination not found.");
+        return;
+    }
+    
+    QString encryptedDir = dest->getPath() + "/encrypted";
+    
+    if (!QDir(encryptedDir).exists()) {
+        QMessageBox::warning(this, "Directory Not Found", 
+            "Encrypted directory not found: " + encryptedDir + 
+            "\n\nMake sure a backup has been created first.");
+        return;
+    }
+    
+    QString keyFilePath = QCoreApplication::applicationDirPath() + "/key.txt";
+    FileDecryptor decryptor;
+    
+    if (!decryptor.loadPasswordFromFile(keyFilePath)) {
+        QMessageBox::critical(this, "Decryption Failed", 
+            "Failed to load password from key.txt\n\nPlease ensure key.txt exists in the application directory.");
+        return;
+    }
+    
+    // Show progress message
+    QMessageBox progressMsg(this);
+    progressMsg.setWindowTitle("Decrypting...");
+    progressMsg.setText("Decrypting backup files, please wait...");
+    progressMsg.setStandardButtons(QMessageBox::NoButton);
+    progressMsg.setModal(false);
+    progressMsg.show();
+    QCoreApplication::processEvents();
+    
+    bool success = decryptor.decryptDirectory(encryptedDir);
+    
+    progressMsg.close();
+    
+    if (success) {
+        QString decryptedPath = encryptedDir + "/decrypted";
+        QMessageBox::information(this, "Decryption Complete", 
+            "All files decrypted successfully!\n\nDecrypted files location:\n" + decryptedPath);
+        qDebug() << "Backup decrypted successfully to:" << decryptedPath;
+    } else {
+        QMessageBox::critical(this, "Decryption Failed", 
+            "Failed to decrypt backup files.\n\nCheck the log for details.");
+    }
+}
+
