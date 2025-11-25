@@ -2,10 +2,10 @@
 #include <QDebug>
 
 // BackupWorker Implementation
-BackupWorker::BackupWorker(const QString& source, const QString& destination, QObject *parent)
+// Accepts a vector of (source, destination) pairs
+BackupWorker::BackupWorker(const std::vector<std::pair<QString, QString>>& sourceDestPairs, QObject *parent)
     : QObject(parent)
-    , m_sourcePath(source)
-    , m_destinationPath(destination)
+    , m_sourceDestPairs(sourceDestPairs)
     , m_status(BackupStatus::Idle)
     , m_progress(0)
     , m_totalFiles(0)
@@ -87,30 +87,46 @@ void BackupWorker::startBackup()
 {
     m_status = BackupStatus::Running;
     emit statusChanged(m_status);
-    
     m_progress = 0;
     m_processedFiles = 0;
     m_shouldStop = false;
 
-    // Count total files
+    // Count total files for all pairs
     emit fileProcessed("Counting files...");
-    m_totalFiles = countFiles(m_sourcePath);
-    
+    m_totalFiles = 0;
+    for (const auto& pair : m_sourceDestPairs) {
+        m_totalFiles += countFiles(pair.first);
+    }
     if (m_totalFiles == 0) {
         m_status = BackupStatus::Failed;
         emit statusChanged(m_status);
-        emit backupFailed("No files found in source directory");
+        emit backupFailed("No files found in source directories");
         return;
     }
 
-    // Start copying
-    bool success = copyDirectory(m_sourcePath, m_destinationPath);
+    // Launch a thread for each (source, destination) pair
+    QList<QThread*> threads;
+    QList<bool> results;
+    for (const auto& pair : m_sourceDestPairs) {
+        QThread* thread = QThread::create([this, pair, &results]() {
+            bool res = copyDirectory(pair.first, pair.second);
+            results.append(res);
+        });
+        threads.append(thread);
+        thread->start();
+    }
+    // Wait for all threads to finish
+    for (QThread* thread : threads) {
+        thread->wait();
+        delete thread;
+    }
 
+    bool allSuccess = std::all_of(results.begin(), results.end(), [](bool v){ return v; });
     if (m_shouldStop) {
         m_status = BackupStatus::Failed;
         emit statusChanged(m_status);
         emit backupFailed("Backup cancelled by user");
-    } else if (success) {
+    } else if (allSuccess) {
         m_status = BackupStatus::Completed;
         m_progress = 100;
         emit progressUpdated(100);
