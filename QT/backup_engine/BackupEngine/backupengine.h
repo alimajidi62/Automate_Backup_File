@@ -11,6 +11,7 @@
 #include <atomic>
 #include <vector>
 #include <utility>
+#include "fileencryptor.h"
 
 enum class BackupStatus {
     Idle,
@@ -56,6 +57,8 @@ private:
     qint64 countFiles(const QString& path);
     bool copyDirectory(const QString& source, const QString& destination);
     bool copyFile(const QString& source, const QString& destination);
+    bool encryptDirectory(const QString& unencryptedDir, const QString& encryptedDir, const QString& keyFilePath);
+    bool deleteDirectory(const QString& dirPath);
 };
 
 class BackupEngine : public QObject
