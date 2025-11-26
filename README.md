@@ -13,19 +13,23 @@ https://github.com/user-attachments/assets/710cf241-e046-4a3d-81c8-cf92a8e18d7b
 - **Source Management**: Local/network/cloud sources with authentication, connectivity testing, and file system monitoring
 - **Destination Management**: Multiple destinations with retention policies and space tracking
 - **File Monitoring**: Real-time change detection (Added/Modified/Deleted/Renamed) with configurable intervals
+- **Backup Execution Engine**: Multi-threaded backup with copy-encrypt-delete workflow
+- **Encryption/Decryption**: Password-based file encryption (XOR + SHA256) with standalone decryption
 - **Cloud Framework**: Abstract CloudProvider interface with GoogleDrive, Dropbox, OneDrive, S3 implementations
 - **Persistence**: JSON-based configuration storage
 - **Cross-Platform Build**: CMake with Qt 6.9.1 (Windows MSVC, Linux GCC, macOS Clang)
 
 ### 🔄 In Progress
-- Cloud OAuth implementation, backup execution engine, compression/encryption, scheduling
+- Cloud OAuth implementation, compression, scheduling automation
 
 ## Key Features
+- **Backup Execution**: Multi-threaded backup engine with progress tracking and cancellation support
+- **Encryption**: Password-based file encryption with XOR + SHA256 key derivation
+- **Decryption**: Standalone recovery tool to decrypt backups to original files
 - **Change Detection**: Real-time file monitoring with modification tracking across local/network/cloud sources
 - **Scheduled Backups**: Configurable schedules (daily/weekly/monthly) with background execution
 - **Multi-Source Support**: Multiple network paths and cloud providers (Google Drive, OneDrive, Dropbox, S3)
 - **Authentication**: Secure credential storage with OAuth for cloud services
-- **Compression & Encryption**: AES-256 encryption and configurable compression
 - **Flexible Destinations**: Local, network, or cloud storage with retention policies
 - **Cross-Platform**: Windows, Linux, macOS support
 
@@ -43,6 +47,9 @@ QT/AutomatedBackupFile/
 ├── Dialogs: networkcredentialsdialog, cloudauthdialog
 ├── Managers: sourcemanager, destinationmanager
 ├── Models: backupsource, backupdestination, retentionpolicy, cloudprovider, backupfilemonitor
+├── Backup Engine: backupengine (threading, progress tracking, start/stop control)
+├── Encryption: fileencryptor (encrypt files with password), filedecryptor (decrypt backups)
+├── Security: key.txt (encryption password storage)
 ├── Resources: resources.qrc, styles.qss
 └── Build: CMakeLists.txt, build/
 ```
