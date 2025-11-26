@@ -161,10 +161,13 @@ The application features a 5-tab interface:
 - [ ] Compression level configuration
 - [ ] Encrypted compression format
 
-### Phase 5: Security & Encryption
-- [ ] AES-256 encryption implementation
+### Phase 5: Security & Encryption (Partially Complete)
+- [x] Password-based file encryption (XOR + SHA256)
+- [x] Secure key file storage (key.txt)
+- [x] Encrypted backup format with .enc extension
+- [x] Decryption functionality for recovery
+- [ ] AES-256 encryption upgrade
 - [ ] Secure credential storage (encrypted vault)
-- [ ] Password-protected backups
 - [ ] Integrity verification (SHA-256 checksums)
 - [ ] Certificate-based authentication for cloud
 - [ ] Two-factor authentication support
@@ -207,18 +210,19 @@ The application features a 5-tab interface:
 
 **3-Layer Design Pattern:**
 - **UI Layer**: Tab widgets (.cpp/.h/.ui) - MainWindow, SourcesTab, ScheduleTab, TasksTab, DestinationTab, SettingsTab, Dialogs
-- **Business Logic**: Manager classes - SourceManager, DestinationManager, CloudProviderFactory
+- **Business Logic**: Manager classes - SourceManager, DestinationManager, BackupEngine, CloudProviderFactory
 - **Data Models**: BackupSource, BackupDestination, RetentionPolicy, CloudProvider, BackupFileMonitor
+- **Security Layer**: FileEncryptor, FileDecryptor with password-based encryption
 
-**Key Patterns**: Factory (CloudProvider), Manager (Source/Destination), Model-View (separation), Observer (Qt signals/slots), Strategy (cloud implementations)
+**Key Patterns**: Factory (CloudProvider), Manager (Source/Destination), Model-View (separation), Observer (Qt signals/slots), Strategy (cloud implementations), Worker Thread (BackupEngine)
 
 ## Roadmap
 
 **Phase 1-2**: ✅ UI, source/destination management, file monitoring  
-**Phase 3**: 🔄 Backup execution engine, progress tracking  
-**Phase 4**: Cloud OAuth, compression (ZIP/7Z), encryption (AES-256)  
+**Phase 3**: ✅ Backup execution engine, encryption/decryption, progress tracking  
+**Phase 4**: 🔄 Cloud OAuth, compression (ZIP/7Z), AES-256 upgrade  
 **Phase 5**: Schedule execution, background service, logging  
-**Phase 6**: Restoration, incremental backups, notifications, CLI
+**Phase 6**: Restoration UI, incremental backups, notifications, CLI
 
 ## Contributing
 
