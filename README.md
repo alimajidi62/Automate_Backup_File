@@ -80,9 +80,23 @@ The application features a 5-tab interface:
 
 1. **Backup Sources**: Add local/network/cloud sources with authentication, test connectivity, enable file monitoring
 2. **Schedule**: Configure automated schedules (UI ready, backend pending)
-3. **Backup Tasks**: Monitor active backups with progress bars (UI ready, backend pending)
-4. **Destinations**: Add destinations, configure retention policies, enable file monitoring with change history
-5. **Settings**: Configure compression/encryption/notifications (UI ready, backend pending)
+3. **Backup Tasks**: Start/stop backups, monitor progress with real-time updates, view backup history
+4. **Destinations**: Add destinations, configure retention policies, decrypt backups, view change history
+5. **Settings**: Configure compression/encryption/notifications, test encryption key
+
+### Backup Workflow
+1. Add sources in **Backup Sources** tab (local folders, network shares, or cloud locations)
+2. Add destinations in **Destinations** tab (where backups will be stored)
+3. Click **Start Backup Now** in **Backup Tasks** tab
+4. Monitor progress bar and status in real-time
+5. Backups are encrypted and stored in `destination/encrypted/` folder
+6. To restore: Select destination in **Destinations** tab → Click **Decrypt Backup**
+7. Decrypted files appear in `destination/encrypted/decrypted/` folder
+
+### Encryption Setup
+- Password stored in `key.txt` file (same directory as executable)
+- Default password: `123456qwerty` (change before production use)
+- Test encryption in **Settings** tab → **Test Encryption**
 
 ## Roadmap
 
@@ -120,16 +134,22 @@ The application features a 5-tab interface:
 - [x] Periodic scanning with configurable intervals
 - [x] Monitoring state persistence
 
-### Phase 3: Core Backup Functionality (In Progress)
+### Phase 3: Core Backup Functionality ✅ (Completed)
 - [x] File system monitoring framework
 - [x] Change detection structure
 - [x] Network path validation
-- [ ] Backup task execution engine
-- [ ] File copy operations with progress tracking
-- [ ] Multi-threaded backup operations
-- [ ] Backup queue management
-- [ ] Error handling and retry logic
-- [ ] Progress reporting to UI
+- [x] Backup task execution engine (BackupEngine class)
+- [x] Multi-threaded backup operations with QThread
+- [x] File copy operations with progress tracking
+- [x] Backup workflow: Copy → Encrypt → Delete unencrypted
+- [x] Error handling and retry logic
+- [x] Progress reporting to UI (progress bar, status label)
+- [x] Start/Stop backup control
+- [x] File encryption with password (FileEncryptor)
+- [x] File decryption for recovery (FileDecryptor)
+- [x] Password-based encryption (XOR + SHA256)
+- [x] Encrypted file format (.enc extension)
+- [x] Standalone decryption in Destinations tab
 
 ### Phase 4: Cloud & Compression (Next)
 - [x] Cloud provider architecture
