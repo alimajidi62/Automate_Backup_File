@@ -56,6 +56,10 @@ set(PROJECT_SOURCES
         fileencryptor.h
         filedecryptor.cpp
         filedecryptor.h
+        backupschedule.cpp
+        backupschedule.h
+        schedulemanager.cpp
+        schedulemanager.h
         resources.qrc
         styles.qss
 )
