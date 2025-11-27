@@ -5,10 +5,12 @@
 #include "taskstab.h"
 #include "destinationtab.h"
 #include "settingstab.h"
+#include "fileencryptor.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QCoreApplication>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -103,6 +105,10 @@ void MainWindow::setupConnections()
     // Settings Connections
     connect(settingsTab->getBtnSaveSettings(), &QPushButton::clicked, this, &MainWindow::onSaveSettings);
     connect(settingsTab->getBtnTestEncryption(), &QPushButton::clicked, this, &MainWindow::onTestEncryption);
+    
+    // Schedule triggered connections
+    connect(scheduleTab->getScheduleManager(), &ScheduleManager::scheduleTriggered, 
+            this, &MainWindow::onScheduleTriggered);
 }
 
 // Source Management Slots
@@ -232,6 +238,18 @@ void MainWindow::onStopBackup()
 void MainWindow::onViewBackupHistory()
 {
     statusBar()->showMessage("View Backup History - Not yet implemented");
+}
+
+void MainWindow::onScheduleTriggered(const QString &scheduleId, const QString &scheduleName)
+{
+    qDebug() << "Schedule triggered:" << scheduleName << "(" << scheduleId << ")";
+    
+    // Mark schedule as run
+    scheduleTab->getScheduleManager()->markScheduleRun(scheduleId);
+    
+    // Automatically start backup
+    statusBar()->showMessage("Scheduled backup started: " + scheduleName);
+    onStartBackup();
 }
 
 void MainWindow::updateBackupProgress(int progress)

@@ -50,6 +50,7 @@ private slots:
     void onStartBackup();
     void onStopBackup();
     void onViewBackupHistory();
+    void onScheduleTriggered(const QString &scheduleId, const QString &scheduleName);
     
     // Settings
     void onSaveSettings();
