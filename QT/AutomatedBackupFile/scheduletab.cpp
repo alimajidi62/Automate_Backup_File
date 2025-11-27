@@ -265,8 +265,8 @@ void ScheduleTab::showScheduleDialog(BackupSchedule *schedule)
         weekdaysList->addItem(day);
     }
     if (schedule && schedule->getFrequency() == ScheduleFrequency::Weekly) {
-        for (int day : schedule->getWeekDays()) {
-            weekdaysList->item(day - 1)->setSelected(true);
+        for (DayOfWeek day : schedule->getWeekDays()) {
+            weekdaysList->item(static_cast<int>(day) - 1)->setSelected(true);
         }
     }
     layout->addRow("Weekdays (Weekly):", weekdaysList);
@@ -313,10 +313,10 @@ void ScheduleTab::showScheduleDialog(BackupSchedule *schedule)
             schedule->setEnabled(enabledCheck->isChecked());
             
             if (frequency == ScheduleFrequency::Weekly) {
-                QList<int> weekdays;
+                QList<DayOfWeek> weekdays;
                 for (int i = 0; i < weekdaysList->count(); ++i) {
                     if (weekdaysList->item(i)->isSelected()) {
-                        weekdays.append(i + 1);
+                        weekdays.append(static_cast<DayOfWeek>(i + 1));
                     }
                 }
                 schedule->setWeekDays(weekdays);
@@ -335,10 +335,10 @@ void ScheduleTab::showScheduleDialog(BackupSchedule *schedule)
             newSchedule->setEnabled(enabledCheck->isChecked());
             
             if (frequency == ScheduleFrequency::Weekly) {
-                QList<int> weekdays;
+                QList<DayOfWeek> weekdays;
                 for (int i = 0; i < weekdaysList->count(); ++i) {
                     if (weekdaysList->item(i)->isSelected()) {
-                        weekdays.append(i + 1);
+                        weekdays.append(static_cast<DayOfWeek>(i + 1));
                     }
                 }
                 newSchedule->setWeekDays(weekdays);

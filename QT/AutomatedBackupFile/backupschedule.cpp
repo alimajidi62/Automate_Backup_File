@@ -1,5 +1,6 @@
 #include "backupschedule.h"
 #include <QDebug>
+#include <QJsonArray>
 
 BackupSchedule::BackupSchedule(const QString &name, ScheduleFrequency frequency, const QTime &time)
     : m_id(QUuid::createUuid().toString(QUuid::WithoutBraces))
