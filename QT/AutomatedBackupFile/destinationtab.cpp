@@ -32,6 +32,9 @@ DestinationTab::DestinationTab(QWidget *parent)
     m_destinationManager->loadFromFile("destinations.json");
     m_backupFileMonitor->loadState("file_monitor.json");
     
+    // Check all loaded destinations to update their status
+    m_destinationManager->checkAllDestinations();
+    
     // Add existing destinations to file monitor
     QList<BackupDestination*> destinations = m_destinationManager->getAllDestinations();
     for (BackupDestination *dest : destinations) {
