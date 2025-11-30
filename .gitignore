@@ -3,3 +3,4 @@
 *.vs
 build
 .vscode
+QT/AutomatedBackupFileTests/build_mingw
