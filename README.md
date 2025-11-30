@@ -59,6 +59,14 @@ QT/AutomatedBackupFile/
 ├── Security: key.txt (encryption password storage)
 ├── Resources: resources.qrc, styles.qss
 └── Build: CMakeLists.txt, build/
+
+QT/AutomatedBackupFileTests/
+├── Test Suite: Comprehensive unit tests using Qt Test framework
+├── Test Files: test_backupsource, test_backupdestination, test_backupschedule, test_retentionpolicy
+├── Encryption Tests: test_fileencryptor, test_filedecryptor
+├── Engine Tests: test_backupengine
+├── Documentation: README.md with build and usage instructions
+└── Build: CMakeLists.txt (individual test executables)
 ```
 
 ## Installation & Building
@@ -66,13 +74,19 @@ QT/AutomatedBackupFile/
 ### Prerequisites
 - Qt 6.9.1+, CMake 3.16+, C++17 compiler (MSVC 2022/GCC 9+/Clang 10+)
 
-### Build
+### Build Application
 ```powershell
-# Windows
+# Windows (MSVC)
 cd QT/AutomatedBackupFile/build
 $env:CMAKE_PREFIX_PATH = "C:\Qt\6.9.1\msvc2022_64"
 cmake .. ; cmake --build . --config Debug
 .\Debug\AutomatedBackupFile.exe
+
+# Windows (MinGW)
+cd QT/AutomatedBackupFile/build
+$env:CMAKE_PREFIX_PATH = "C:\Qt\6.9.1\mingw_64"
+cmake .. -G "MinGW Makefiles" ; cmake --build .
+.\AutomatedBackupFile.exe
 
 # Linux/macOS
 cd QT/AutomatedBackupFile
@@ -80,6 +94,42 @@ mkdir build && cd build
 cmake .. && cmake --build .
 ./AutomatedBackupFile
 ```
+
+### Build & Run Tests
+```powershell
+# Windows (MSVC)
+cd QT/AutomatedBackupFileTests
+mkdir build; cd build
+cmake .. -DCMAKE_PREFIX_PATH=C:/Qt/6.9.1/msvc2022_64
+cmake --build . --config Debug
+
+# Run all tests
+ctest --verbose
+
+# Run individual tests
+.\bin\Debug\test_backupsource.exe
+.\bin\Debug\test_backupdestination.exe
+.\bin\Debug\test_backupengine.exe
+
+# Windows (MinGW)
+cd QT/AutomatedBackupFileTests
+mkdir build; cd build
+cmake .. -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH=C:/Qt/6.9.1/mingw_64
+cmake --build .
+
+# Run tests
+ctest --verbose
+```
+
+**Test Coverage:**
+- 180+ test cases covering all core classes
+- Source/Destination/Schedule management tests
+- File encryption/decryption verification
+- Backup engine with progress tracking
+- JSON serialization/deserialization
+- Signal emission and state management
+
+See `QT/AutomatedBackupFileTests/README.md` for detailed test documentation.
 
 ## Usage
 
@@ -230,7 +280,23 @@ The application features a 5-tab interface:
 - [ ] Comprehensive logging system
 - [ ] Log rotation and cleanup
 
-### Phase 8: Enterprise & Polish
+### Phase 8: Testing & Quality Assurance ✅ (Completed)
+- [x] Qt Test framework integration
+- [x] Unit tests for all core classes (180+ test cases)
+- [x] BackupSource/BackupDestination test coverage
+- [x] BackupSchedule/RetentionPolicy test coverage
+- [x] FileEncryptor/FileDecryptor test coverage
+- [x] BackupEngine test coverage with signal testing
+- [x] JSON serialization/deserialization tests
+- [x] Individual test executables for isolation
+- [x] CTest integration for automated testing
+- [x] Test documentation and build instructions
+- [ ] Integration tests for full backup workflows
+- [ ] Performance benchmarks and stress tests
+- [ ] Code coverage reporting
+- [ ] Continuous integration pipeline
+
+### Phase 9: Enterprise & Polish
 - [ ] Command-line interface
 - [ ] REST API for remote management
 - [ ] Backup profiles and templates
@@ -240,7 +306,6 @@ The application features a 5-tab interface:
 - [ ] Database storage option (SQLite)
 - [ ] Performance profiling and optimization
 - [ ] Memory usage optimization
-- [ ] Cross-platform testing suite
 - [ ] Documentation and user manual
 - [ ] Installer packages (MSI, DEB, DMG)
 
@@ -248,13 +313,33 @@ The application features a 5-tab interface:
 
 **3-Layer Design Pattern:**
 - **UI Layer**: Tab widgets (.cpp/.h/.ui) - MainWindow, SourcesTab, ScheduleTab, TasksTab, DestinationTab, SettingsTab, Dialogs
-- **Business Logic**: Manager classes - SourceManager, DestinationManager, ScheduleManager, BackupEngine, CloudProviderFactory
-- **Data Models**: BackupSource, BackupDestination, BackupSchedule, RetentionPolicy, CloudProvider, BackupFileMonitor
-- **Security Layer**: FileEncryptor, FileDecryptor with password-based encryption
+## Testing
 
-**Key Patterns**: Factory (CloudProvider), Manager (Source/Destination/Schedule), Model-View (separation), Observer (Qt signals/slots), Strategy (cloud implementations), Worker Thread (BackupEngine), Timer (ScheduleManager)
+The project includes a comprehensive test suite with 180+ test cases covering:
 
-## Roadmap
+- **Data Models**: BackupSource, BackupDestination, BackupSchedule, RetentionPolicy
+- **Encryption**: FileEncryptor, FileDecryptor with encrypt/decrypt cycles
+- **Backup Engine**: Multi-threaded operations, progress tracking, signal emission
+- **Serialization**: JSON persistence and deserialization
+- **Edge Cases**: Empty files, large files, wrong passwords, non-existent paths
+
+**Run Tests:**
+```powershell
+cd QT/AutomatedBackupFileTests/build
+ctest --verbose
+```
+
+See `QT/AutomatedBackupFileTests/README.md` for detailed test documentation.
+
+## Contributing
+
+Contributions welcome! Please:
+- Follow Qt conventions and C++17 standards
+- Maintain UI/logic/data separation (3-layer architecture)
+- Use Qt signals/slots for event handling
+- Add unit tests for new business logic (Qt Test framework)
+- Ensure all tests pass before submitting PRs
+- Update documentation for new features
 
 **Phase 1-2**: ✅ UI, source/destination management, file monitoring  
 **Phase 3**: ✅ Backup execution engine, encryption/decryption, progress tracking  
