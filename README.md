@@ -367,4 +367,4 @@ Contributions welcome! Follow Qt conventions, maintain UI/logic/data separation,
 
 ---
 *Project under active development - features and documentation updated regularly*
-I would like to add c# wpf to this repo
+I would like to add c# wpf to this repo but not now
