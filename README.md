@@ -368,3 +368,4 @@ Contributions welcome! Follow Qt conventions, maintain UI/logic/data separation,
 ---
 *Project under active development - features and documentation updated regularly*
 I would like to add c# wpf to this repo but not now
+I will use cuda for encrypting file to reach faster process
