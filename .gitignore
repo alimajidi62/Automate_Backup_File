@@ -4,3 +4,4 @@
 build
 .vscode
 QT/AutomatedBackupFileTests/build_mingw
+Debug
