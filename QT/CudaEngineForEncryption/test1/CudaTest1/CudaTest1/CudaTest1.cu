@@ -13,6 +13,18 @@ void checkCudaError(cudaError_t err, const char* msg) {
 }
 
 int main() {
+    // Check GPU capabilities
+    int deviceCount = 0;
+    cudaGetDeviceCount(&deviceCount);
+    std::cout << "Found " << deviceCount << " CUDA device(s)." << std::endl;
+    
+    if (deviceCount > 0) {
+        cudaDeviceProp prop;
+        cudaGetDeviceProperties(&prop, 0);
+        std::cout << "Device: " << prop.name << std::endl;
+        std::cout << "Compute Capability: " << prop.major << "." << prop.minor << std::endl;
+    }
+    
     int a = 5, b = 7, c = 0;
 
     int* d_a, * d_b, * d_c;
@@ -27,7 +39,7 @@ int main() {
     checkCudaError(cudaMemcpy(d_b, &b, sizeof(int), cudaMemcpyHostToDevice), "copy b to device");
 
     // run kernel with 1 block and 1 thread
-    add << <1, 1 >> > (d_a, d_b, d_c);
+    add<<<1, 1>>>(d_a, d_b, d_c);
     checkCudaError(cudaGetLastError(), "kernel launch");
 
     // wait for GPU to finish
