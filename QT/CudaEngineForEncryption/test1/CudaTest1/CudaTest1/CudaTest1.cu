@@ -1,22 +1,48 @@
-// CudaTest1.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
+#include <cuda_runtime.h>
+
 __global__ void add(int* a, int* b, int* c) {
     *c = *a + *b;
 }
-int main()
-{
-    std::cout << "Hello World!\n";
+
+void checkCudaError(cudaError_t err, const char* msg) {
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA Error: " << msg << " - " << cudaGetErrorString(err) << std::endl;
+        exit(1);
+    }
 }
 
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
+int main() {
+    int a = 5, b = 7, c = 0;
 
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errorsr
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
+    int* d_a, * d_b, * d_c;
+
+    // allocate memory on GPU
+    checkCudaError(cudaMalloc((void**)&d_a, sizeof(int)), "malloc d_a");
+    checkCudaError(cudaMalloc((void**)&d_b, sizeof(int)), "malloc d_b");
+    checkCudaError(cudaMalloc((void**)&d_c, sizeof(int)), "malloc d_c");
+
+    // copy from CPU to GPU
+    checkCudaError(cudaMemcpy(d_a, &a, sizeof(int), cudaMemcpyHostToDevice), "copy a to device");
+    checkCudaError(cudaMemcpy(d_b, &b, sizeof(int), cudaMemcpyHostToDevice), "copy b to device");
+
+    // run kernel with 1 block and 1 thread
+    add << <1, 1 >> > (d_a, d_b, d_c);
+    checkCudaError(cudaGetLastError(), "kernel launch");
+
+    // wait for GPU to finish
+    checkCudaError(cudaDeviceSynchronize(), "device sync");
+
+    // copy result back to CPU
+    checkCudaError(cudaMemcpy(&c, d_c, sizeof(int), cudaMemcpyDeviceToHost), "copy result to host");
+
+    // print result
+    std::cout << "Result: " << c << std::endl;
+
+    // free GPU memory
+    cudaFree(d_a);
+    cudaFree(d_b);
+    cudaFree(d_c);
+
+    return 0;
+}
