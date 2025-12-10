@@ -5,17 +5,21 @@
 __global__ void add(int* a, int* b, int* c, int n, int iterations) {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
     if (index < n) {
-        int result = 0;
-        for (int iter = 0; iter < iterations; iter++) {
-            result = a[index] + b[index];
+        int result = a[index] + b[index];
+        for (int iter = 1; iter < iterations; iter++) {
+            result += a[index] + b[index];
         }
         c[index] = result;
     }
 }
 
-void addCPU(int* a, int* b, int* c, int n) {
+void addCPU(int* a, int* b, int* c, int n, int iterations) {
     for (int i = 0; i < n; i++) {
-        c[i] = a[i] + b[i];
+        int result = a[i] + b[i];
+        for (int iter = 1; iter < iterations; iter++) {
+            result += a[i] + b[i];
+        }
+        c[i] = result;
     }
 }
 
@@ -42,7 +46,7 @@ int main() {
     // Define array size
     const int N = 1024;
     const int bytes = N * sizeof(int);
-    const int iterations = 10000000;
+    const int iterations = 50000000;
     
     // Allocate host memory
     int* h_a = new int[N];
@@ -60,9 +64,7 @@ int main() {
     std::cout << "\n========== CPU Benchmark ==========" << std::endl;
     auto cpu_start = std::chrono::high_resolution_clock::now();
     
-    for (int iter = 0; iter < iterations; iter++) {
-        addCPU(h_a, h_b, h_c_cpu, N);
-    }
+    addCPU(h_a, h_b, h_c_cpu, N, iterations);
     
     auto cpu_end = std::chrono::high_resolution_clock::now();
     auto cpu_duration = std::chrono::duration_cast<std::chrono::milliseconds>(cpu_end - cpu_start);
@@ -112,15 +114,20 @@ int main() {
     std::cout << "GPU Time: " << gpu_duration.count() << " ms" << std::endl;
     std::cout << "Speedup: " << (float)cpu_duration.count() / gpu_duration.count() << "x" << std::endl;
     
-    // Verify results match
+    // Verify results match and prevent optimization
     bool resultsMatch = true;
+    long long checksum_cpu = 0;
+    long long checksum_gpu = 0;
     for (int i = 0; i < N; i++) {
+        checksum_cpu += h_c_cpu[i];
+        checksum_gpu += h_c_gpu[i];
         if (h_c_cpu[i] != h_c_gpu[i]) {
             resultsMatch = false;
-            break;
         }
     }
     std::cout << "Results match: " << (resultsMatch ? "YES" : "NO") << std::endl;
+    std::cout << "CPU Checksum: " << checksum_cpu << std::endl;
+    std::cout << "GPU Checksum: " << checksum_gpu << std::endl;
 
     // Print first 10 results
     std::cout << "\nFirst 10 results:" << std::endl;
