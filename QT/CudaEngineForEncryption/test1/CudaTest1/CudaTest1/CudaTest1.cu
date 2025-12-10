@@ -62,7 +62,7 @@ int main() {
               << threadsPerBlock << " threads per block" << std::endl;
 
     // Run kernel with multiple blocks and threads
-    for (size_t i = 0; i < 10000000; i++)
+    for (size_t i = 0; i < 100000; i++)
     {
         add << <blocksPerGrid, threadsPerBlock >> > (d_a, d_b, d_c, N);
     }
