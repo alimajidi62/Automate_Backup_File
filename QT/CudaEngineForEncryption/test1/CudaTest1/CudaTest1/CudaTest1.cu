@@ -1,8 +1,11 @@
 #include <iostream>
 #include <cuda_runtime.h>
 
-__global__ void add(int* a, int* b, int* c) {
-    *c = *a + *b;
+__global__ void add(int* a, int* b, int* c, int n) {
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    if (index < n) {
+        c[index] = a[index] + b[index];
+    }
 }
 
 void checkCudaError(cudaError_t err, const char* msg) {
